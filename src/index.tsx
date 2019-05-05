@@ -2,11 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+
+// |x 1|2 x|
+// |x x|x x|
+// ---------
+// |4 x|x 1|
+// |x x|x x|
+
+// 0100200040000100
+// 0100
+// 2000
+// 4000
+// 0100

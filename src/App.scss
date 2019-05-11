@@ -36,9 +36,10 @@ table.grid {
 
         &.cell {
           border: 3px inset green;
-
+          
           tr > td {
             border: 2px inset gray;
+            user-select: none;
 
             &:hover.available {
               color: white;

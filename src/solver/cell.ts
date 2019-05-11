@@ -84,7 +84,6 @@ export class Cell implements ICell {
 			this.totalOptionsRemaining = copy.totalOptionsRemaining;
 
 			this.json = copy.json;
-			return;
 			
 			if (copy.json.rows) {
 				this.json = { rows: [] };
@@ -239,7 +238,7 @@ export class Cell implements ICell {
 
 	public containsSymbol(symbol: string): boolean {
 		const index: number = Cell.symbols.indexOf(symbol);
-		return (this.options & 1 << index) > 0;
+		return (this.options & 1 << index) > 0; // eslint-disable-line no-mixed-operators
 	}
 
 	private setRemainingOption(options: number) {

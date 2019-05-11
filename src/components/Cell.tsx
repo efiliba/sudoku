@@ -1,8 +1,35 @@
-import React from 'react';
+import React, {MouseEvent} from 'react';
+import {Modifier} from './constants';
 import {IJsonCell} from '../solver/cell';
 
-export const Cell = ({data}: {data: IJsonCell}) =>
-  !data.rows
+export interface ICellSelection {
+  button: string;
+  symbol: string;
+  optionColumn: number;
+  optionRow: number;
+  modifiers: Modifier;
+}
+
+export const Cell = ({data, onCellSelection}: {data: IJsonCell, onCellSelection: (e: ICellSelection) => void}) => {
+  const handleClick = (optionColumn: number, optionRow: number) => (e: MouseEvent) => {
+    e.preventDefault();
+    
+    const modifiers = Modifier.NONE |
+      (e.getModifierState('Shift') && Modifier.SHIFT) |
+      (e.getModifierState('Control') && Modifier.CONTROL) |
+      (e.getModifierState('Alt') && Modifier.OPTION) |
+      ((e.getModifierState('Meta') || e.getModifierState('OS')) && Modifier.COMMAND); // Mac / Windows (logo)
+
+    onCellSelection({
+      button: e.type === 'click' ? 'left' : 'right',
+      symbol: e.currentTarget.textContent,
+      optionColumn,
+      optionRow,
+      modifiers
+    });
+  };
+  
+  return !data.rows
     ? <table className="symbol-selected">
         <tbody>
           <tr>
@@ -17,14 +44,17 @@ export const Cell = ({data}: {data: IJsonCell}) =>
           {data.rows.map((row, rowIndex) =>
             <tr key={rowIndex}>
               {row.columns.map((data, index) =>
-                <td key={index} className={data.strikeOut ? 'strike-out' : 'available'}>
+                <td
+                  key={index}
+                  className={data.strikeOut ? 'strike-out' : 'available'}
+                  onClick={handleClick(index, rowIndex)}
+                  onContextMenu={handleClick(index, rowIndex)}
+                >
                   {data.symbol}
-                  {/* <svg xmlns="http://www.w3.org/2000/svg">
-                    <line x1="100%" y1="0" x2="0" y2="100%" stroke="red" stroke-width="1" />
-                  </svg> */}
                 </td>
               )}
             </tr>
           )}
         </tbody>
       </table>;
+};

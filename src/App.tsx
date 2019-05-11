@@ -1,48 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useState, useEffect} from 'react';
+import './App.scss';
 
-import { SetMethod } from "./solver/cell";
-import { SubGrid } from "./solver/subGrid";
+import solver from "./solver";
 
-import { Cell } from './components';
+import {Grid} from './components';
 
 
-// Cell.Constructor(2, 2);
-SubGrid.Constructor(2, 2);
-
-const test = () => {
-  const subGrid = new SubGrid(0, 0);
-  subGrid.setByPosition(0, 0, 0, 0, SetMethod.user);  // should have top left cell set
-  
-  subGrid.setByOption(1, 0, 2, SetMethod.loaded);
-  subGrid.setByPosition(0, 1, 0, 1, SetMethod.loaded);
-  
-  subGrid.debug();
-  subGrid.simplify(); // should be solved
-  
-  const t = subGrid.debug();
-  console.log(t);
-  debugger;
-}
+solver.Grid.Constructor(2, 2);
+const grid = new solver.Grid();
 
 const App: React.FC = () => {
+  const [data, setGridData] = useState(grid.toJson());
+
+  const update = () => {
+    // debugger
+    grid.setByOption(0, 0, 0, 0, 1);       // Set (top left) top left cell to 1
+    grid.setByOption(0, 1, 0, 0, 2);       // Set (bottom left) top left cell to 2
+    grid.setByOption(1, 0, 0, 1, 4);       // Set (top right) bottom left cell to 3
+    // grid.setByOption(1, 1, 1, 1, 8);
+    // grid.solve();
+
+    // console.log(grid.toJson());
+    // debugger;
+    setGridData(grid.toJson());
+  }
+
+  // useEffect(update, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <Cell options={5}/>
-
-        <p>
-          <button onClick={test}>Load</button>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <Grid data={data} />
+        <button onClick={update}>Load</button>
       </header>
     </div>
   );

@@ -1,6 +1,6 @@
-import { Grid, IGrid } from "./grid";
-import { SubGrid, ISubGrid } from "./subGrid";
-import { SetMethod, Cell, ICell } from "./cell";
+import {Grid, IGrid} from "./grid";
+import {SubGrid, ISubGrid} from "./subGrid";
+import {SetMethod, Cell, ICell} from "./cell";
 
 describe("Grid", () => {
 	describe("1x2", () => {
@@ -72,8 +72,8 @@ describe("Grid", () => {
 		let expectedSubGrids: ISubGrid[][];
 
 		it("should be set", () => {
-			let columns: number = 1;
-			let rows: number = 4;
+			const columns: number = 1;
+			const rows: number = 4;
 			Grid.Constructor(columns, rows);
 			grid = new Grid();
 
@@ -195,7 +195,7 @@ describe("Grid", () => {
 		});
 
 		it("should have bottom right sub-grid, top left cell set to 2", () => {
-			grid.setByOption(1, 1, 0, 0, 2, SetMethod.user);							// Set bottom right sub-grid, top left cell to 2
+			grid.setByOption(1, 1, 0, 0, 2);															// Set bottom right sub-grid, top left cell to 2
 			grid.simplify();
 
 			//        |       ||       |       |              |       ||       |       |              |       ||       |       |
@@ -230,7 +230,7 @@ describe("Grid", () => {
 		});
 
 		it("should have bottom left sub-grid, top right cell set to 3", () => {
-			grid.setByOption(0, 1, 1, 0, 4, SetMethod.user); 							// Set bottom left sub-grid, top right cell to 4 (symbol 3)
+			grid.setByOption(0, 1, 1, 0, 4); 															// Set bottom left sub-grid, top right cell to 4 (symbol 3)
 			grid.simplify();
 
 			//        |       ||       |       |              |       ||       |       |
@@ -265,12 +265,12 @@ describe("Grid", () => {
 
 		it("should be solved", () => {
 			grid = new Grid();
-			grid.setByOption(0, 0, 0, 0, 1, SetMethod.user);        			// 1 |   |   |
-			grid.setByOption(0, 0, 1, 1, 2, SetMethod.user);              //   | 2 |   |
-			grid.setByOption(1, 1, 0, 0, 4, SetMethod.user);              //   |   | 3 |
-			grid.setByOption(1, 1, 1, 1, 8, SetMethod.user);              //   |   |   | 4
+			grid.setByOption(0, 0, 0, 0, 1);        											// 1 |   |   |
+			grid.setByOption(0, 0, 1, 1, 2);              								//   | 2 |   |
+			grid.setByOption(1, 1, 0, 0, 4);              								//   |   | 3 |
+			grid.setByOption(1, 1, 1, 1, 8);              								//   |   |   | 4
 
-			grid.setByOption(1, 0, 1, 0, 2, SetMethod.user);              // top right set to 2
+			grid.setByOption(1, 0, 1, 0, 2);              								// top right set to 2
 			grid.solve();
 
 			expect(grid.solved()).toBeTruthy();
@@ -389,7 +389,7 @@ describe("Grid", () => {
 			grid.setByOption(1, 1, 0, 0, 4, SetMethod.loaded);
 			grid.setByOption(1, 1, 1, 1, 8, SetMethod.loaded);
 			
-			grid.setByOption(1, 0, 1, 0, 2, SetMethod.user);
+			grid.setByOption(1, 0, 1, 0, 2);
 			expect(grid.solve()).toBeTruthy();
 			const current: ICell[] = grid.save();
 
@@ -706,7 +706,7 @@ describe("Grid", () => {
 			});
 
 			it("should be solved", () => {
-				grid.setByOption(0, 0, 0, 0, 1, SetMethod.user);
+				grid.setByOption(0, 0, 0, 0, 1);
 				expect(grid.toJson()).toEqual({
 					rows:
 					[
@@ -1308,7 +1308,7 @@ describe("Grid", () => {
 			});
 
 			it("should have top left sub grid solved", () => {
-					grid.setByOption(0, 0, 0, 1, 4, SetMethod.user);
+					grid.setByOption(0, 0, 0, 1, 4);
 
 					expect(grid.toJson()).toEqual({
 							//#region 2x2 JSON Grid
@@ -1606,7 +1606,7 @@ describe("Grid", () => {
 			});
 
 			it("should have top right grid solved", () => {
-					grid.setByOption(1, 0, 0, 1, 1, SetMethod.user);
+					grid.setByOption(1, 0, 0, 1, 1);
 
 					expect(grid.toJson()).toEqual({
 							//#region 2x2 JSON Grid
@@ -1728,101 +1728,101 @@ describe("Grid", () => {
 			});
 
 			it("should have left grid row set", () => {
-					grid.setByOption(0, 1, 0, 0, 2, SetMethod.user);
+				grid.setByOption(0, 1, 0, 0, 2);
 
-					expect(grid.toJson()).toEqual({
-							//#region 2x2 JSON Grid
-							rows:
+				expect(grid.toJson()).toEqual({
+					//#region 2x2 JSON Grid
+					rows:
+					[
+						{
+							columns:
 							[
-									{
-											columns:
-											[
-													{
-															rows:
-															[
-																	{ columns: [{ symbol: '1', setMethod: SetMethod.loaded }, { symbol: '2', setMethod: SetMethod.loaded }] },
-																	{ columns: [{ symbol: '3', setMethod: SetMethod.user }, { symbol: '4' }] }
-															]
-													},
-													{
-															rows:
-															[
-																	{ columns: [{ symbol: '3', setMethod: SetMethod.loaded }, { symbol: '4' }] },
-																	{ columns: [{ symbol: '1', setMethod: SetMethod.user }, { symbol: '2' }] }
-															]
-													}
-											]
-									},
-									{
-											columns:
-											[
-													{
-															rows:
-															[
-																	{
-																			columns:
-																			[
-																					{ symbol: '2', setMethod: SetMethod.user },
-																					{
-																							rows:
-																							[
-																									{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
-																									{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
-																							]
-																					}
-																			]
-																	},
-																	{
-																			columns:
-																			[
-																					{ symbol: '4' },
-																					{
-																							rows:
-																							[
-																									{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
-																									{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
-																							]
-																					}
-																			]
-																	}
-															]
-													},
-													{
-															rows:
-															[
-																	{
-																			columns:
-																			[
-																					{ symbol: '4' },
-																					{
-																							rows:
-																							[
-																									{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
-																									{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
-																							]
-																					}
-																			]
-																	},
-																	{
-																			columns:
-																			[
-																					{ symbol: '2' },
-																					{
-																							rows:
-																							[
-																									{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
-																									{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
-																							]
-																					}
-																			]
-																	}
-															]
-													}
-											]
-									}
+								{
+									rows:
+									[
+										{ columns: [{ symbol: '1', setMethod: SetMethod.loaded }, { symbol: '2', setMethod: SetMethod.loaded }] },
+										{ columns: [{ symbol: '3', setMethod: SetMethod.user }, { symbol: '4' }] }
+									]
+								},
+								{
+									rows:
+									[
+										{ columns: [{ symbol: '3', setMethod: SetMethod.loaded }, { symbol: '4' }] },
+										{ columns: [{ symbol: '1', setMethod: SetMethod.user }, { symbol: '2' }] }
+									]
+								}
 							]
-							//#endregion
-					});
+						},
+						{
+							columns:
+							[
+								{
+									rows:
+									[
+										{
+											columns:
+											[
+												{ symbol: '2', setMethod: SetMethod.user },
+												{
+													rows:
+													[
+														{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
+														{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
+													]
+												}
+											]
+										},
+										{
+											columns:
+											[
+												{ symbol: '4' },
+												{
+													rows:
+													[
+														{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
+														{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
+													]
+												}
+											]
+										}
+									]
+								},
+								{
+									rows:
+									[
+										{
+											columns:
+											[
+												{ symbol: '4' },
+												{
+													rows:
+													[
+														{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
+														{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
+													]
+												}
+											]
+										},
+										{
+											columns:
+											[
+												{ symbol: '2' },
+												{
+													rows:
+													[
+														{ columns: [{ symbol: '1' }, { symbol: '2', strikeOut: true }] },
+														{ columns: [{ symbol: '3' }, { symbol: '4', strikeOut: true }] }
+													]
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+					//#endregion
+				});
 			});
 
 			it("should be solved", () => {
@@ -2514,21 +2514,21 @@ describe("Grid", () => {
 		});
 
 		it("should have modified valid", () => {
-			grid.setByOption(0, 0, 0, 0, 1, SetMethod.user);            	// 1 |   |   |
-			grid.setByOption(0, 0, 1, 1, 2, SetMethod.user);            	//   | 2 |   |
-			grid.setByOption(1, 1, 0, 0, 4, SetMethod.user);            	//   |   | 3 |
-			grid.setByOption(1, 1, 1, 1, 8, SetMethod.user);            	//   |   |   | 4
+			grid.setByOption(0, 0, 0, 0, 1,);            									// 1 |   |   |
+			grid.setByOption(0, 0, 1, 1, 2,);            									//   | 2 |   |
+			grid.setByOption(1, 1, 0, 0, 4,);            									//   |   | 3 |
+			grid.setByOption(1, 1, 1, 1, 8,);            									//   |   |   | 4
 
 			expect(grid.isValid()).toBeTruthy();
 		});
 
 		it("should have solved valid", () => {
-			grid.setByOption(0, 0, 0, 0, 1, SetMethod.user);
-			grid.setByOption(0, 0, 1, 1, 2, SetMethod.user);
-			grid.setByOption(1, 1, 0, 0, 4, SetMethod.user);
-			grid.setByOption(1, 1, 1, 1, 8, SetMethod.user);
+			grid.setByOption(0, 0, 0, 0, 1);
+			grid.setByOption(0, 0, 1, 1, 2);
+			grid.setByOption(1, 1, 0, 0, 4);
+			grid.setByOption(1, 1, 1, 1, 8);
 
-			grid.setByOption(1, 0, 1, 0, 2, SetMethod.user);							// top right set to 2
+			grid.setByOption(1, 0, 1, 0, 2);															// top right set to 2
 			grid.solve();
 
 			expect(grid.solved()).toBeTruthy();
@@ -2536,8 +2536,8 @@ describe("Grid", () => {
 		});
 
 		it("should not be valid", () => {
-			grid.setByOption(0, 0, 0, 0, 1, SetMethod.user);           // Set top left and top right cells to 1
-			grid.setByOption(1, 0, 1, 0, 1, SetMethod.user);
+			grid.setByOption(0, 0, 0, 0, 1);           										// Set top left and top right cells to 1
+			grid.setByOption(1, 0, 1, 0, 1);
 			expect(grid.isValid()).toBeFalsy();
 		});
 	});

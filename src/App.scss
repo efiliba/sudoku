@@ -1,0 +1,79 @@
+html {
+  box-sizing: border-box;
+  padding-right: 20px;
+  background-color: #222;
+  color: #444;
+  font-size: calc(10px + 1vmin);
+}
+
+table.grid {
+  border: 5px inset #282c34;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: center;
+
+  & > tbody > tr > td > table.sub-grid {
+    border: 4px inset blue;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+
+    & > tbody > tr > td {
+      table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        height: 100%;
+
+        &.symbol-selected {
+          height: 100%;
+          border: 3px inset green;
+          font-size: 40px;
+          color: red;
+        }
+
+        &.cell {
+          border: 3px inset green;
+
+          tr > td {
+            border: 2px inset gray;
+
+            &:hover.available {
+              color: white;
+            }
+
+            &.strike-out {
+              background-image: url('./img/StrikeOut.png');
+              background-size: 100% 100%;
+            }
+          }
+        }
+      }
+
+
+
+          .loaded {
+            background-image: url('./img/Sphere.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: yellow;
+          }
+
+          .user {
+            background-image: url('./img/Sphere.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: white;
+          }
+
+          .calculated {
+            background-image: url('./img/Sphere.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: green;
+          }
+    }
+  }
+}

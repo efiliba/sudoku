@@ -1,5 +1,4 @@
-import { Cell, SetMethod, ICell, IJsonCell } from "./cell";
-import { debug } from "util";
+import {Cell, SetMethod, ICell, IJsonCell} from "./cell";
 
 export interface IOption {
 	subGridColumn: number;
@@ -16,12 +15,14 @@ export interface IStruckOutCells {
 	removedOptionsFromRow: IOption[];
 }
 
+export type DebugSubGridType = number[][];
+
 export interface IJsonSubGridRow {
 	columns: IJsonCell[];
 }
 
 export interface IJsonSubGrid {
-	rows: IJsonSubGridRow[];
+	rows?: IJsonSubGridRow[];
 }
 
 export interface ISubGrid {
@@ -34,7 +35,7 @@ export interface ISubGrid {
 	setBySymbol(column: number, row: number, symbol: string, setMethod: SetMethod): number;
 	compare(items: ICell[][]): boolean;
 	simplify(): void;
-	debug(log: boolean): number[][];
+	debug(log: boolean): DebugSubGridType;
 
 	solved(): boolean;
 	getAvailableOptionsMatrix(): number[][];
@@ -95,8 +96,9 @@ export class SubGrid implements ISubGrid {
 		const json: IJsonSubGrid = { rows: [] };
 		for (let row: number = 0; row < SubGrid.rows; row++) {
 			const jsonCells: IJsonCell[] = [];
-			for (let column: number = 0; column < SubGrid.columns; column++)
+			for (let column: number = 0; column < SubGrid.columns; column++) {
 				jsonCells.push(this.cells[row][column].json);
+			}
 			json.rows.push({ columns: jsonCells });
 		}
 
@@ -107,12 +109,12 @@ export class SubGrid implements ISubGrid {
 //            this.remainingCells = SubGrid.columns * SubGrid.rows;
 
 		for (let row: number = 0; row < json.rows.length; row++) {
-				const columns: IJsonCell[] = json.rows[row].columns;
-				for (let column = 0; column < columns.length; column++) {
-						this.cells[row][column].setJson(columns[column]);
+			const columns: IJsonCell[] = json.rows[row].columns;
+			for (let column = 0; column < columns.length; column++) {
+				this.cells[row][column].setJson(columns[column]);
 //                    if (this.cells[row][column].isSet)
 //                        this.remainingCells--;
-				}
+			}
 		}
 	}
 
@@ -178,8 +180,8 @@ export class SubGrid implements ISubGrid {
 		}
 	}
 
-	public debug(log: boolean = true): number[][] {
-		const rows: number[][] = [];
+	public debug(log: boolean = true): DebugSubGridType {
+		const rows: DebugSubGridType = [];
 
 		let row: number = SubGrid.rows;
 		while (row--) {

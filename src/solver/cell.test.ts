@@ -1,4 +1,4 @@
-import { Cell, ICell, SetMethod, IJsonCell } from "./cell";
+import {Cell, ICell, SetMethod, IJsonCell} from "./cell";
 
 describe("cell", () => {
 	it("should contain option at position", () => {

@@ -1,4 +1,4 @@
-import { powerOf2BitPositions, highestBitPosition, numberOfBitsSet } from "./utils/bitUtilities";
+import {powerOf2BitPositions, highestBitPosition, numberOfBitsSet} from "./utils/bitUtilities";
 
 export enum SetMethod {
 	loaded,
@@ -7,7 +7,7 @@ export enum SetMethod {
 }
 
 export interface IJsonCellColumn {
-	symbol: string;
+	symbol?: string;
 	strikeOut?: boolean;
 }
 

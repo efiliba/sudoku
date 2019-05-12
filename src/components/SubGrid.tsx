@@ -1,6 +1,7 @@
 import React from 'react';
 import {Cell, ICellSelection} from './Cell';
 import {IJsonSubGrid} from '../solver/subGrid';
+import './SubGrid.scss';
 
 export interface ISubGridSelection extends ICellSelection {
   cellColumn: number;
@@ -13,7 +14,7 @@ export const SubGrid = ({data, onSubGridSelection}:
   const totalRows = data.rows.length;
   const totalColumns = data.rows[0].columns.length;
   const total = totalRows * totalColumns;
-  const width = 90 / total + 'vw';
+  const width = `calc(${90 / total}vw - ${50 / totalColumns}px)`;  // Space for legend
   const height = 90 / total + 'vh';
 
   const handleCellSelection = (cellColumn: number, cellRow: number) => (cellSelection: ICellSelection) => {

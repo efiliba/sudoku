@@ -1,6 +1,7 @@
 import React from 'react';
 import {SubGrid, ISubGridSelection} from './SubGrid';
 import {IJsonGrid} from '../solver/grid';
+import './Grid.scss';
 
 export interface IGridSelection extends ISubGridSelection {
   subGridColumn: number;

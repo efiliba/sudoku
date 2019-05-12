@@ -1,0 +1,44 @@
+.legend {
+  display: flex;
+  flex-direction: column;
+  // width: 200px;
+  // border: solid 2px white;
+
+  &__heading {
+    color: white;
+    text-align: center;
+    font-size: 20px;
+  }
+
+  &__cell {
+    // border: solid 1px red;
+    display: flex;
+    padding-top: 10px;
+    
+    .cell {
+      width: 70px;
+      height: 70px;
+    }
+
+    table.cell {
+      border: none;
+
+      tbody > tr > td {
+        border: solid 1px gray;
+      }
+    }
+
+    &--left > table.cell {
+      border: solid 2px yellow;
+    }
+
+    &--right > table.cell {
+      border: solid 2px orange;
+    }
+
+    &--text {
+      margin: auto 0 auto 5px;
+      color: white;
+    }
+  }
+}

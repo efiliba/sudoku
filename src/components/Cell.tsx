@@ -1,5 +1,6 @@
 import React, {MouseEvent} from 'react';
 import {IJsonCell} from '../solver/cell';
+import './Cell.scss';
 
 export enum Modifier {
   NONE = 0,
@@ -37,7 +38,7 @@ export const Cell = ({data, onCellSelection}: {data: IJsonCell, onCellSelection:
   };
   
   return !data.rows
-    ? <table className="symbol-selected">
+    ? <table className="cell symbol-selected">
         <tbody>
           <tr>
             <td className={`set-method-${data.setMethod}`}>

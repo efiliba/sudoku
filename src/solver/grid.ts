@@ -43,6 +43,9 @@ export interface IGrid {
 	fixByPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow): void;
 	setByOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number, setMethod?: SetMethod): void;
 	setBySymbol(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string, setMethod?: SetMethod): void;
+	setByPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number, setMethod: SetMethod): void;
+	strikeOutAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
+	pencilInAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
 	fixByOptions(fixedOptions: number[]): void;
 	fixByCsv(options: string): void;
 	unfix(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number): void;
@@ -424,6 +427,44 @@ export class Grid implements IGrid {
 		}
 
 		this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, option);
+	}
+
+	public setByPositionShallow(
+		subGridColumn: number,
+		subGridRow: number,
+		cellColumn: number,
+		cellRow: number,
+		optionColumn: number,
+		optionRow: number,
+		setMethod: SetMethod = SetMethod.user
+	) {
+		if (this.subGrids[subGridRow][subGridColumn].setByPosition(cellColumn, cellRow, optionColumn, optionRow, setMethod)) {
+			this.totalSet++;
+		}
+	}
+
+	public strikeOutAtPositionShallow(
+		subGridColumn: number,
+		subGridRow: number,
+		cellColumn: number,
+		cellRow: number,
+		optionColumn: number,
+		optionRow: number
+	) {
+		const cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
+		cell.removeOptionAtPositionShallow(optionColumn, optionRow);
+	}
+
+	public pencilInAtPositionShallow(
+		subGridColumn: number,
+		subGridRow: number,
+		cellColumn: number,
+		cellRow: number,
+		optionColumn: number,
+		optionRow: number
+	) {
+		const cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
+		cell.highlightOptionAtPosition(optionColumn, optionRow);
 	}
 
 	public fixByOptions(fixedOptions: number[]) {

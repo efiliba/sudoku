@@ -16,8 +16,8 @@ const select: IJsonCell = {
 
 const pencil: IJsonCell = {
   rows: [
-    { columns: [{ symbol: '1' }, { symbol: '2' }, { symbol: '3' }] },
-    { columns: [{ symbol: '4' }, { symbol: '5' }, { symbol: '6' }] },
+    { columns: [{ symbol: '1' }, { symbol: '2' }, { symbol: '3', highlight: true }] },
+    { columns: [{ symbol: '4' }, { symbol: '5', highlight: true }, { symbol: '6' }] },
     { columns: [{ symbol: '7' }, { symbol: '8' }, { symbol: '9' }] }
   ]
 };
@@ -38,7 +38,7 @@ const LegendCell = ({data, text, activeMouseButton, onSelection}: ILegendCell) =
 
 export const Legend = () =>
   <div className="legend">
-    <div className="legend__heading">Legend</div>
+    <div className="legend__heading">Mode</div>
     <LegendCell activeMouseButton="left" data={select} text="Select" onSelection={console.log} />
     <LegendCell activeMouseButton="right" data={pencil} text="Pencil" onSelection={console.log} />
     <LegendCell data={strikeOut} text="Strike Out" onSelection={console.log} />

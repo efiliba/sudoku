@@ -43,6 +43,11 @@ table.cell {
         background-image: url('../img/StrikeOut.png');
         background-size: 100% 100%;
       }
+
+      &.highlight {
+        color: white;
+        font-weight: bold;
+      }
     }
   }
 }

@@ -1,8 +1,9 @@
 import React, {MouseEvent} from 'react';
+import classNames from 'classnames';
 import {IJsonCell} from '../solver/cell';
 import './Cell.scss';
 
-export enum Modifier {
+export enum ModifierKeys {
   NONE = 0,
   SHIFT = 1,
   CONTROL = 2,
@@ -15,19 +16,24 @@ export interface ICellSelection {
   symbol: string;
   optionColumn: number;
   optionRow: number;
-  modifiers: Modifier;
+  modifiers: ModifierKeys;
 }
 
-export const Cell = ({data, onCellSelection}: {data: IJsonCell, onCellSelection: (e: ICellSelection) => void}) => {
-  const handleClick = (optionColumn: number, optionRow: number) => (e: MouseEvent) => {
+interface ICell {
+  data: IJsonCell;
+  onCellSelection: (e: ICellSelection) => void;
+}
+
+export const Cell = ({data, onCellSelection}: ICell) => {
+  const handleClick = (optionColumn?: number, optionRow?: number) => (e: MouseEvent): void => {
     e.preventDefault();
     
-    const modifiers = Modifier.NONE |
-      (e.getModifierState('Shift') && Modifier.SHIFT) |
-      (e.getModifierState('Control') && Modifier.CONTROL) |
-      (e.getModifierState('Alt') && Modifier.OPTION) |
-      ((e.getModifierState('Meta') || e.getModifierState('OS')) && Modifier.COMMAND); // Mac / Windows (logo)
-
+    const modifiers = ModifierKeys.NONE |
+      (e.getModifierState('Shift') && ModifierKeys.SHIFT) |
+      (e.getModifierState('Control') && ModifierKeys.CONTROL) |
+      (e.getModifierState('Alt') && ModifierKeys.OPTION) |
+      ((e.getModifierState('Meta') || e.getModifierState('OS')) && ModifierKeys.COMMAND); // Mac / Windows (logo)
+  
     onCellSelection({
       button: e.type === 'click' ? 'left' : 'right',
       symbol: e.currentTarget.textContent,
@@ -36,25 +42,16 @@ export const Cell = ({data, onCellSelection}: {data: IJsonCell, onCellSelection:
       modifiers
     });
   };
-  
-  return !data.rows
-    ? <table className="cell symbol-selected">
-        <tbody>
-          <tr>
-            <td className={`set-method-${data.setMethod}`}>
-              {data.symbol}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    : <table className="cell">
+
+  return data.rows
+    ? <table className="cell">
         <tbody>
           {data.rows.map((row, rowIndex) =>
             <tr key={rowIndex}>
               {row.columns.map((data, index) =>
                 <td
                   key={index}
-                  className={data.strikeOut ? 'strike-out' : 'available'}
+                  className={classNames({'strike-out': data.strikeOut, 'highlight': data.highlight})}
                   onClick={handleClick(index, rowIndex)}
                   onContextMenu={handleClick(index, rowIndex)}
                 >
@@ -63,6 +60,19 @@ export const Cell = ({data, onCellSelection}: {data: IJsonCell, onCellSelection:
               )}
             </tr>
           )}
+        </tbody>
+      </table>
+    : <table className="cell symbol-selected">
+        <tbody>
+          <tr>
+            <td
+              className={`set-method-${data.setMethod}`}
+              onClick={handleClick()}
+              onContextMenu={handleClick()}
+            >
+              {data.symbol}
+            </td>
+          </tr>
         </tbody>
       </table>;
 };

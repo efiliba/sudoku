@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import solver from "./solver";
-import {Grid, IGridSelection, Legend} from './components';
+import {Grid, ModifierKeys, IGridSelection, Legend} from './components';
 import './App.scss';
 
 solver.Grid.Constructor(2, 2);
@@ -14,12 +14,25 @@ const App: React.FC = () => {
   const [data, setGridData] = useState(grid.toJson());
   
   const handleSelection = ({button, modifiers, subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow, symbol}: IGridSelection) => {
-    // grid.fixByPosition(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
-    grid.setBySymbol(subGridColumn, subGridRow, cellColumn, cellRow, symbol);
+    switch (modifiers) {
+      case ModifierKeys.NONE:
+        grid.setByPositionShallow(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
+        break;
+      case ModifierKeys.SHIFT:
+        grid.strikeOutAtPositionShallow(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
+        break;
+      case ModifierKeys.CONTROL:
+        grid.pencilInAtPositionShallow(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
+        break;
+      case ModifierKeys.OPTION:
+        grid.setBySymbol(subGridColumn, subGridRow, cellColumn, cellRow, symbol);
+        break;
+      case ModifierKeys.COMMAND:
+        grid.removeOptionAtPosition(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
+        break;
+    }
+
     grid.simplify();
-    // grid.solve();
-    // grid.debug();
-    // console.log(grid.toJson());
     setGridData(grid.toJson());
   };
 

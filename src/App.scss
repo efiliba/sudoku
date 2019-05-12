@@ -31,7 +31,22 @@ table.grid {
           height: 100%;
           border: 3px inset green;
           font-size: 40px;
-          color: red;
+
+          color: green;
+
+          .set-method-user {
+            background-image: url('./img/Sphere.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: yellow;
+          }
+
+          .set-method-loaded {
+            background-image: url('./img/Sphere.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: white;
+          }
         }
 
         &.cell {
@@ -52,29 +67,6 @@ table.grid {
           }
         }
       }
-
-
-
-          .loaded {
-            background-image: url('./img/Sphere.png');
-            background-repeat: no-repeat;
-            background-position: center center;
-            color: yellow;
-          }
-
-          .user {
-            background-image: url('./img/Sphere.png');
-            background-repeat: no-repeat;
-            background-position: center center;
-            color: white;
-          }
-
-          .calculated {
-            background-image: url('./img/Sphere.png');
-            background-repeat: no-repeat;
-            background-position: center center;
-            color: green;
-          }
     }
   }
 }

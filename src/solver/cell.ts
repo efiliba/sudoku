@@ -1,9 +1,9 @@
 import {powerOf2BitPositions, highestBitPosition, numberOfBitsSet} from "./utils/bitUtilities";
 
 export enum SetMethod {
-	loaded,
-	user,
-	calculated
+	loaded = 'loaded',
+	user = 'user',
+	calculated = 'calculated'
 }
 
 export interface IJsonCellColumn {

@@ -391,7 +391,7 @@ export class Grid implements IGrid {
 		while (index--) {
 			lastOption = struckOutCells.lastOptionsFound[index];
 			this.strikeOut(lastOption.subGridColumn, lastOption.subGridRow, lastOption.cellColumn, lastOption.cellRow, lastOption.bits);
-//                this.subGrids[lastOption.subGridRow][lastOption.subGridColumn].get(lastOption.cellColumn, lastOption.cellRow).setMethod = SetMethod.calculated;
+			// this.subGrids[lastOption.subGridRow][lastOption.subGridColumn].get(lastOption.cellColumn, lastOption.cellRow).setMethod = SetMethod.calculated;
 		}
 
 		this.totalSet += struckOutCells.lastOptionsFound.length;
@@ -402,8 +402,9 @@ export class Grid implements IGrid {
 	}       
 
 	public fixByPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number) {
-		if (this.subGrids[subGridRow][subGridColumn].setByPosition(cellColumn, cellRow, optionColumn, optionRow, SetMethod.loaded))
+		if (this.subGrids[subGridRow][subGridColumn].setByPosition(cellColumn, cellRow, optionColumn, optionRow, SetMethod.loaded)) {
 			this.totalSet++;
+		}
 
 		this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, 1 << Grid.columns * optionRow + optionColumn);
 	}
@@ -418,7 +419,7 @@ export class Grid implements IGrid {
 
 	public setBySymbol(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string, setMethod: SetMethod = SetMethod.user) {
 		const option = this.subGrids[subGridRow][subGridColumn].setBySymbol(cellColumn, cellRow, symbol, setMethod);
-		if (option) {
+		if (option > 0) {
 			this.totalSet++;
 		}
 

@@ -36,12 +36,8 @@ export interface ICell {
 	solved(): boolean;
 	removeOption(option: number): boolean;
 	removeOptionAtPosition(column: number, row: number): boolean;
-	removeOptionAtPositionShallow(column: number, row: number): void;
-	highlightOptionAtPosition(column: number, row: number): void;
-	removeOptions(remove: number): boolean;
-	removeOptionAtPosition(column: number, row: number): boolean;
-	removeOptionAtPositionShallow(column: number, row: number): void;
-	highlightOptionAtPosition(column: number, row: number): void;
+	toggleRemoveOptionAtPositionShallow(column: number, row: number): void;
+	toggleHighlightOptionAtPosition(column: number, row: number): void;
 	removeOptions(remove: number): boolean;
 	setByPosition(column: number, row: number, setMethod: SetMethod): void;
 	setByOption(option: number, setMethod: SetMethod): void;
@@ -169,12 +165,14 @@ export class Cell implements ICell {
 		return lastOptionFound;
 	}
 
-	public removeOptionAtPositionShallow(column: number, row: number): void {
-		this.json.rows[row].columns[column].strikeOut = true;
+	public toggleRemoveOptionAtPositionShallow(column: number, row: number): void {
+		const cell = this.json.rows[row].columns[column];
+		cell.strikeOut = !cell.strikeOut;
 	}
 
-	public highlightOptionAtPosition(column: number, row: number): void {
-		this.json.rows[row].columns[column].highlight = true;
+	public toggleHighlightOptionAtPosition(column: number, row: number): void {
+		const cell = this.json.rows[row].columns[column];
+		cell.highlight = !cell.highlight;
 	}
 
 	public removeOption(option: number): boolean {                   	// Return if last option left after removing this option

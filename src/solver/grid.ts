@@ -27,9 +27,9 @@ export interface IGrid {
 	reset(): void;
 	get(column: number, row: number): ISubGrid;
 	toJson(): IJsonGrid;
-	setJson(json: IJsonGrid): void;
+	setJson(json: IJsonGrid, simplify?: boolean): void;
 	compare(items: ISubGrid[][]): boolean;
-	solve(eliminateAfter?: number, maxRecursionLevel?: number): boolean;
+	solve(restart?: boolean, eliminateAfter?: number, maxRecursionLevel?: number): boolean;
 	solved(): boolean;
 	removeOptionAtPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): boolean;
 	removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option): boolean;
@@ -44,8 +44,8 @@ export interface IGrid {
 	setByOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number, setMethod?: SetMethod): void;
 	setBySymbol(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string, setMethod?: SetMethod): void;
 	setByPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number, setMethod: SetMethod): void;
-	strikeOutAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
-	pencilInAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
+	toggleStrikeOutAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
+	togglePencilInAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
 	fixByOptions(fixedOptions: number[]): void;
 	fixByCsv(options: string): void;
 	unfix(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number): void;
@@ -99,7 +99,7 @@ export class Grid implements IGrid {
 		return json;
 	}
 
-	public setJson(json: IJsonGrid) {
+	public setJson(json: IJsonGrid, simplify: boolean = false) {
 		// Set sub grids' json values  
 		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
 			const jsonColumns: IJsonSubGrid[] = json.rows[subGridRow].columns;
@@ -108,7 +108,12 @@ export class Grid implements IGrid {
 			}
 		}
 
-		// Strike out set cells
+		if (simplify) {
+			this.strikeOutFromSetCells();
+		}
+	}
+
+	private strikeOutFromSetCells() {
 		this.totalSet = 0;
 		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
 			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
@@ -139,7 +144,11 @@ export class Grid implements IGrid {
 		return match;
 	}
 
-	public solve(eliminateAfter: number = 0, maxRecursionLevel: number = 1): boolean {
+	public solve(restart: boolean = false, eliminateAfter: number = 0, maxRecursionLevel: number = 1): boolean {
+		if (restart) {
+			this.strikeOutFromSetCells();
+		}
+	
 		do {                                                            // Repeat while an only option found or an option removed
 			while (this.simplify())
 					;
@@ -330,7 +339,7 @@ export class Grid implements IGrid {
 						let tryOption: number = options & ~(options - 1);				// lowest set bit value
 						while (tryOption && valid) {
 							this.setByOption(column, row, cellColumn, cellRow, tryOption, SetMethod.calculated);
-							this.solve(unsetOptionsDepth, recursionLevel - 1);
+							this.solve(false, unsetOptionsDepth, recursionLevel - 1);
 							valid = this.isValid();
 							this.load(cells);                         						// Reset
 							this.totalSet = saveTotalSet;
@@ -443,7 +452,7 @@ export class Grid implements IGrid {
 		}
 	}
 
-	public strikeOutAtPositionShallow(
+	public toggleStrikeOutAtPositionShallow(
 		subGridColumn: number,
 		subGridRow: number,
 		cellColumn: number,
@@ -452,10 +461,10 @@ export class Grid implements IGrid {
 		optionRow: number
 	) {
 		const cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
-		cell.removeOptionAtPositionShallow(optionColumn, optionRow);
+		cell.toggleRemoveOptionAtPositionShallow(optionColumn, optionRow);
 	}
 
-	public pencilInAtPositionShallow(
+	public togglePencilInAtPositionShallow(
 		subGridColumn: number,
 		subGridRow: number,
 		cellColumn: number,
@@ -464,7 +473,7 @@ export class Grid implements IGrid {
 		optionRow: number
 	) {
 		const cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
-		cell.highlightOptionAtPosition(optionColumn, optionRow);
+		cell.toggleHighlightOptionAtPosition(optionColumn, optionRow);
 	}
 
 	public fixByOptions(fixedOptions: number[]) {

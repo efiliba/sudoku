@@ -3,7 +3,7 @@ import solver from "./solver";
 import {Grid, ModifierKeys, IGridSelection, Legend} from './components';
 import './App.scss';
 
-solver.Grid.Constructor(2, 2);
+solver.Grid.Constructor(3, 3);
 const grid = new solver.Grid();
 // grid.fixByPosition(0, 0, 0, 0, 0, 0);
 // grid.fixByPosition(0, 0, 1, 1, 1, 0);
@@ -13,17 +13,17 @@ const grid = new solver.Grid();
 const App: React.FC = () => {
   const [data, setGridData] = useState(grid.toJson());
   const fileRef = useRef(null);
-  const loadedJson = useRef(null);
+  const loadedFileData = useRef(null);
 
   const handleSelection = ({button, modifiers, subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow, symbol}: IGridSelection) => {
-    const subGrid = grid.get(subGridColumn, subGridRow).get(subGridRow, cellColumn);
-    if (subGrid.solved()) {
-      subGrid.reset();
-    } else
-
     switch (modifiers) {
       case ModifierKeys.NONE:
-        grid.setByPositionShallow(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
+          const subGrid = grid.get(subGridColumn, subGridRow).get(cellColumn, cellRow);
+          if (subGrid.solved()) {
+            subGrid.reset();
+          } else {
+            grid.setByPositionShallow(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
+          }
         break;
       case ModifierKeys.SHIFT:
         grid.toggleStrikeOutAtPositionShallow(subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow);
@@ -49,22 +49,22 @@ const App: React.FC = () => {
 
   const handleSelectFile = async () => {
     const [file] = fileRef.current.files;
-    const text = await (new Response(file)).text();
-    loadedJson.current = JSON.parse(text);
+    loadedFileData.current = await (new Response(file)).text();
+    fileRef.current.value = null;                                   // Enable re-loading the same file
 
     handleReset();
   };
 
   const handleReset = () => {
     grid.reset();
-    if (loadedJson.current != null) {
-      grid.setJson(loadedJson.current);
-    }
-    setGridData(grid.toJson());
+    
+    const json = loadedFileData.current ? JSON.parse(loadedFileData.current) : grid.toJson();
+    grid.setJson(json);
+    setGridData(json);
   };
 
   const handleSolve = () => {
-    const solved = grid.solve(true);
+    const solved = grid.solve({restart: true, maxRecursionLevel: 2});
     setGridData(grid.toJson());
 
     console.log({solved, valid: grid.isValid()});

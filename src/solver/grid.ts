@@ -29,10 +29,10 @@ export interface IGrid {
 	toJson(): IJsonGrid;
 	setJson(json: IJsonGrid, simplify?: boolean): void;
 	compare(items: ISubGrid[][]): boolean;
-	solve(restart?: boolean, eliminateAfter?: number, maxRecursionLevel?: number): boolean;
+	solve(params?: {restart?: boolean, eliminateAfter?: number, maxRecursionLevel?: number}): boolean;
 	solved(): boolean;
 	removeOptionAtPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): boolean;
-	removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option): boolean;
+	removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): boolean;
 	simplify(): boolean;
 	debug(log: boolean): DebugSubGridType[][];
 
@@ -40,7 +40,7 @@ export interface IGrid {
 	save(): ICell[];
 	strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): void;
 	isStruckOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string): boolean;        
-	fixByPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow): void;
+	fixByPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
 	setByOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number, setMethod?: SetMethod): void;
 	setBySymbol(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string, setMethod?: SetMethod): void;
 	setByPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number, setMethod: SetMethod): void;
@@ -144,7 +144,7 @@ export class Grid implements IGrid {
 		return match;
 	}
 
-	public solve(restart: boolean = false, eliminateAfter: number = 0, maxRecursionLevel: number = 1): boolean {
+	public solve({restart, eliminateAfter = 0, maxRecursionLevel = 1}: {restart?: boolean, eliminateAfter?: number, maxRecursionLevel?: number} = {}): boolean {
 		if (restart) {
 			this.strikeOutFromSetCells();
 		}
@@ -182,7 +182,7 @@ export class Grid implements IGrid {
 		}
 	}
 
-	public removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option): boolean {
+	public removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): boolean {
 		let cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
 		if (cell.removeOption(option)) {                     						// Check if last option left
 			this.totalSet++;
@@ -339,7 +339,7 @@ export class Grid implements IGrid {
 						let tryOption: number = options & ~(options - 1);				// lowest set bit value
 						while (tryOption && valid) {
 							this.setByOption(column, row, cellColumn, cellRow, tryOption, SetMethod.calculated);
-							this.solve(false, unsetOptionsDepth, recursionLevel - 1);
+							this.solve({eliminateAfter: unsetOptionsDepth, maxRecursionLevel: recursionLevel - 1});
 							valid = this.isValid();
 							this.load(cells);                         						// Reset
 							this.totalSet = saveTotalSet;

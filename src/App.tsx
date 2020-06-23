@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import solver from "./solver";
 import {Grid, ModifierKeys, IGridSelection, Legend} from './components';
 import './App.scss';
@@ -10,7 +10,20 @@ const grid = new solver.Grid();
 // grid.fixByPosition(1, 1, 0, 0, 0, 1);
 // grid.fixByPosition(1, 1, 1, 1, 1, 1);
 
+const loadWasm = async () => {
+  try {
+    const wasm = await import('wasm');
+    console.log(wasm.add(2, 3));
+  } catch(err) {
+    console.error(`Unexpected error in loadWasm. [Message: ${err.message}]`);
+  }
+};
+
 const App: React.FC = () => {
+  useEffect(() => {
+    loadWasm();
+  }, []);
+
   const [data, setGridData] = useState(grid.toJson());
   const fileRef = useRef(null);
   const loadedFileData = useRef(null);

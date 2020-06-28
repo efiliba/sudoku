@@ -24,7 +24,7 @@ export interface IJsonCell {
 
 export interface ICell {
 	setMethod: SetMethod;
-	options: number;
+	readonly options: number;
 	json: IJsonCell;
 	totalOptionsRemaining: number;
 
@@ -49,6 +49,8 @@ export interface ICell {
 	containsSymbol(symbol: string): boolean;
 	removedOptionsPerRow(row: number): number[];
 	setJson(json: IJsonCell): void;
+
+	loadOptions(options: number): void;
 }
 
 export class Cell implements ICell {
@@ -196,9 +198,9 @@ export class Cell implements ICell {
 	}
 
 	public removeOptions(remove: number): boolean {
-		let lastOptionFound: boolean = false;
+		let lastOptionFound = false;
 
-		let removeOptions: number = this.options & remove;
+		let removeOptions = this.options & remove;
 		if (removeOptions && this.totalOptionsRemaining > 1 && this.options & ~remove) {	// Remove options iff cell contains other options
 			this.options -= removeOptions;
 			this.totalOptionsRemaining -= numberOfBitsSet(removeOptions);
@@ -209,12 +211,13 @@ export class Cell implements ICell {
 				this.setMethod = SetMethod.calculated;
 				lastOptionFound = true;
 			}
-			else
+			else {
 				while (removeOptions) {
-					let highestBitPos: number = highestBitPosition(removeOptions);
+					let highestBitPos = highestBitPosition(removeOptions);
 					this.json.rows[highestBitPos / Cell.columns >> 0].columns[highestBitPos % Cell.columns].strikeOut = true;
 					removeOptions -= 1 << highestBitPos;
 				}
+			}
 		}
 
 		return lastOptionFound;
@@ -250,12 +253,12 @@ export class Cell implements ICell {
 	}
 
 	public containsSymbol(symbol: string): boolean {
-		const index: number = Cell.symbols.indexOf(symbol);
+		const index = Cell.symbols.indexOf(symbol);
 		return (this.options & 1 << index) > 0; // eslint-disable-line no-mixed-operators
 	}
 
 	private setRemainingOption(options: number) {
-		const index: number = highestBitPosition(options);
+		const index = highestBitPosition(options);
 		this.setColumn = index % Cell.columns;
 		this.setRow = index / Cell.columns >> 0;
 	}
@@ -306,5 +309,22 @@ export class Cell implements ICell {
 		}
 
 		this.json = json;
+	}
+
+	public loadOptions(options: number) {
+		// debugger;
+		// console.log(options);
+		
+		const totalOptionsRemaining = numberOfBitsSet(options);
+		
+		if (totalOptionsRemaining === 1) {
+			this.setByOption(options, SetMethod.loaded);	// Can also optimise this
+		}
+
+		// else update this cell's state
+		// See logic in removeOptions(remove: number): boolean
+		// e.g.
+		// this.options = options;
+		// this.totalOptionsRemaining = totalOptionsRemaining;
 	}
 }

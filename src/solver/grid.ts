@@ -1,4 +1,5 @@
 import {IOnlyOption, bitwiseOR, numberOfBitsSet, onlyOption, containingBitIndex} from "./utils/bitUtilities";
+import {groupBy, transposeRows} from "./utils/arrayUtilities";
 import {Combinations} from "./utils/combinations";
 import {SetMethod, ICell, IJsonCell} from "./cell";
 import {SubGrid, ISubGrid, IOption, DebugSubGridType, IStruckOutCells, IJsonSubGrid} from "./subGrid";
@@ -44,6 +45,7 @@ export interface IGrid {
 	setByOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number, setMethod?: SetMethod): void;
 	setBySymbol(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string, setMethod?: SetMethod): void;
 	setByPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number, setMethod: SetMethod): void;
+	setByOptionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number, setMethod: SetMethod): void;
 	toggleStrikeOutAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
 	togglePencilInAtPositionShallow(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
 	fixByOptions(fixedOptions: number[]): void;
@@ -313,6 +315,18 @@ export class Grid implements IGrid {
 		return cells;
 	}
 
+	public loadOptions(options: number[]) {
+		const size = Grid.columns * Grid.rows;
+		const grouped = groupBy(options, size);
+		const transposed: number[][][] = transposeRows(Grid.columns, grouped);
+
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				this.subGrids[subGridRow][subGridColumn].loadOptions(transposed[subGridRow][subGridColumn])
+			}
+		}
+	}
+
 	private eliminate(unsetOptionsDepth: number, recursionLevel: number): boolean {
 		let cells: ICell[] = this.save();                           		// Save current state
 		let saveTotalSet: number = this.totalSet;
@@ -448,6 +462,19 @@ export class Grid implements IGrid {
 		setMethod: SetMethod = SetMethod.user
 	) {
 		if (this.subGrids[subGridRow][subGridColumn].setByPosition(cellColumn, cellRow, optionColumn, optionRow, setMethod)) {
+			this.totalSet++;
+		}
+	}
+
+	public setByOptionShallow(
+		subGridColumn: number,
+		subGridRow: number,
+		cellColumn: number,
+		cellRow: number,
+		option: number,
+		setMethod: SetMethod = SetMethod.user
+	) {
+		if (this.subGrids[subGridRow][subGridColumn].setByOption(cellColumn, cellRow, option, setMethod)) {
 			this.totalSet++;
 		}
 	}

@@ -57,6 +57,7 @@ export interface ISubGrid {
 	optionRemovedFromColumn(cellColumn: number, cellRow: number, option: number): boolean;
 	optionRemovedFromRow(cellColumn: number, cellRow: number, removedOption: number): boolean;
 	setCells(subGrid: ICell[][]): void;
+	loadOptions(options: number[]): void;
 }
 
 export class SubGrid implements ISubGrid {
@@ -534,9 +535,18 @@ export class SubGrid implements ISubGrid {
 	}
 
 	public setCells(subGrid: ICell[][]) {
-		for (let row: number = 0; row < SubGrid.rows; row++) {
-			for (let column: number = 0; column < SubGrid.columns; column++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
 				this.cells[row][column] = new Cell(subGrid[row][column]);
+			}
+		}
+	}
+
+	public loadOptions(options: number[]) {
+		let index = 0;
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
+				this.cells[row][column].loadOptions(options[index++]);
 			}
 		}
 	}

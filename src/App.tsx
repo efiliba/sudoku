@@ -3,23 +3,17 @@ import solver from "./solver";
 import {Grid, ModifierKeys, IGridSelection, Legend} from './components';
 import './App.scss';
 
-solver.Grid.Constructor(3, 3);
-const grid = new solver.Grid();
-// grid.fixByPosition(0, 0, 0, 0, 0, 0);
-// grid.fixByPosition(0, 0, 1, 1, 1, 0);
-// grid.fixByPosition(1, 1, 0, 0, 0, 1);
-// grid.fixByPosition(1, 1, 1, 1, 1, 1);
-
-const loadWasm = async () => {
-  try {
-    const wasm = await import('wasm');
-    console.log(wasm.add(2, 3));
-  } catch(err) {
-    console.error(`Unexpected error in loadWasm. [Message: ${err.message}]`);
-  }
-};
+// grid.setByPositionShallow(0, 0, 0, 0, 0, 0);
+// grid.setByPositionShallow(0, 0, 1, 1, 1, 0);
+// grid.setByPositionShallow(1, 1, 0, 0, 0, 1);
+// grid.setByPositionShallow(1, 1, 1, 1, 1, 1);
+// // grid.setByPositionShallow(1, 0, 1, 0, 1, 0);
+// grid.setByPositionShallow(1, 0, 0, 0, 1, 1);
 
 const App: React.FC = () => {
+  solver.Grid.Constructor(2, 2);
+  const grid = new solver.Grid();
+
   useEffect(() => {
     loadWasm();
   }, []);
@@ -27,6 +21,20 @@ const App: React.FC = () => {
   const [data, setGridData] = useState(grid.toJson());
   const fileRef = useRef(null);
   const loadedFileData = useRef(null);
+
+  const loadWasm = async () => {
+    try {
+      // const input = new Uint32Array(grid.save().map(({options}) => options));
+      const input = new Uint32Array([1, 15, 8, 15, 15, 2, 15, 15, 15, 15, 4, 15, 15, 15, 15, 8]);
+  
+      const wasm = await import('wasm');
+      const solved = Array.from(wasm.solve(2, 3, input));
+      grid.loadOptions(solved);
+      setGridData(grid.toJson());                                   // Update display
+    } catch(err) {
+      console.error(`Unexpected error in loadWasm. [Message: ${err.message}]`);
+    }
+  };
 
   const handleSelection = ({button, modifiers, subGridColumn, subGridRow, cellColumn, cellRow, optionColumn, optionRow, symbol}: IGridSelection) => {
     switch (modifiers) {

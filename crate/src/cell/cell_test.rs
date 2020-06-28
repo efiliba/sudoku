@@ -120,7 +120,7 @@ mod cell_3x3 {
     let dimensions = &Dimensions::new(3, 3);
     let cell = Cell::new(dimensions, 0, 0);
 
-    assert_eq!(cell.options, usize::pow(2, 9) - 1);                 // All options available i.e. 511
+    assert_eq!(cell.options, u64::pow(2, 9) - 1);                   // All options available i.e. 511
     assert_eq!(cell.total_options_remaining, dimensions.total);     // 3 * 3
     assert_eq!(cell.solved(), false);                               // Not solved
     assert_eq!(cell.set_method, SetMethod::Unset);
@@ -186,7 +186,7 @@ mod cell_3x3 {
     cell.set_by_position(0, 2, SetMethod::User);
     cell.reset();
 
-    assert_eq!(cell.options, usize::pow(2, 3 * 3) - 1);             // All options available i.e. 511
+    assert_eq!(cell.options, u64::pow(2, 3 * 3) - 1);               // All options available i.e. 511
     assert_eq!(cell.total_options_remaining, 3 * 3);
     assert_eq!(cell.solved(), false);
     assert_eq!(cell.set_method, SetMethod::Unset);

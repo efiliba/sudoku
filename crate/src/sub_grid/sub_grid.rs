@@ -85,7 +85,7 @@ impl<'a> SubGrid<'a> {
     &self.cells[row][column]
   }
 
-  pub fn available_options_row(&self) -> Vec<usize> {
+  pub fn available_options_row(&self) -> Vec<u64> {
     let mut options_row = Vec::with_capacity(self.dimensions.total);
 
     for row in 0..self.dimensions.rows {
@@ -118,7 +118,7 @@ impl<'a> SubGrid<'a> {
     &mut self,
     column: usize,
     row: usize,
-    option: usize,
+    option: u64,
     set_method: SetMethod
   ) -> bool {
     let cell = &mut self.cells[row][column];
@@ -135,7 +135,7 @@ impl<'a> SubGrid<'a> {
     row: usize,
     symbol: char,
     set_method: SetMethod
-  ) -> usize {
+  ) -> u64 {
     let cell = &mut self.cells[row][column];
     if cell.set_method == SetMethod::Unset {
       cell.set_by_symbol(symbol, set_method);
@@ -209,7 +209,7 @@ impl<'a> SubGrid<'a> {
     solved
   }
 
-  pub fn get_available_options_matrix(&self) -> Vec<Vec<usize>> {
+  pub fn get_available_options_matrix(&self) -> Vec<Vec<u64>> {
     let mut matrix = Vec::with_capacity(self.dimensions.rows - 1);
 
     for row in 0..self.dimensions.rows {
@@ -262,7 +262,7 @@ impl<'a> SubGrid<'a> {
     unset
   }
 
-  pub fn get_available_options(&self) -> Vec<usize> {
+  pub fn get_available_options(&self) -> Vec<u64> {
     let mut array = Vec::with_capacity(self.dimensions.total);
     
     for row in 0..self.dimensions.rows {
@@ -279,7 +279,7 @@ impl<'a> SubGrid<'a> {
     &mut self,
     cell_column: usize,
     cell_row: usize,
-    option: usize
+    option: u64
   ) -> StruckOutCells {
     let mut last_options: Vec<BitOption> = Vec::new();
     let mut removed_options_from_column: Vec<BitOption> = Vec::new();
@@ -440,7 +440,7 @@ impl<'a> SubGrid<'a> {
     !self.cells[cell_row][cell_column].contains_symbol(symbol)
   }
 
-  pub fn remove_options_from_column(&mut self, cell_column: usize, options: usize) -> Vec<BitOption> {
+  pub fn remove_options_from_column(&mut self, cell_column: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     for row in 0..self.dimensions.rows {
@@ -458,7 +458,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn remove_options_from_row(&mut self, cell_row: usize, options: usize) -> Vec<BitOption> {
+  pub fn remove_options_from_row(&mut self, cell_row: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     for column in 0..self.dimensions.columns {
@@ -476,7 +476,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn remove_options_except_from_column(&mut self, exclude_column: usize, options: usize) -> Vec<BitOption> {
+  pub fn remove_options_except_from_column(&mut self, exclude_column: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     let mut row: usize;
@@ -518,7 +518,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn remove_options_except_from_row(&mut self, exclude_row: usize, options: usize) -> Vec<BitOption> {
+  pub fn remove_options_except_from_row(&mut self, exclude_row: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     let mut column: usize;
@@ -560,7 +560,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn remove_if_extra_options_from_column(&mut self, column: usize, options: usize) -> Vec<BitOption> {
+  pub fn remove_if_extra_options_from_column(&mut self, column: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     for row in 0..self.dimensions.rows {
@@ -578,7 +578,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn remove_if_extra_options_from_row(&mut self, row: usize, options: usize) -> Vec<BitOption> {
+  pub fn remove_if_extra_options_from_row(&mut self, row: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     for column in 0..self.dimensions.columns {
@@ -596,7 +596,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn remove_if_extra_options(&mut self, options: usize) -> Vec<BitOption> {
+  pub fn remove_if_extra_options(&mut self, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
     for row in 0..self.dimensions.rows {
@@ -616,7 +616,7 @@ impl<'a> SubGrid<'a> {
     last_options
   }
 
-  pub fn option_exists_in_column(&self, column: usize, option: usize) -> bool {
+  pub fn option_exists_in_column(&self, column: usize, option: u64) -> bool {
     let mut found = false;
     let mut row = self.dimensions.rows;
     while !found && row > 0 {
@@ -627,7 +627,7 @@ impl<'a> SubGrid<'a> {
     found
   }
 
-  pub fn option_exists_in_row(&self, row: usize, option: usize) -> bool {
+  pub fn option_exists_in_row(&self, row: usize, option: u64) -> bool {
     let mut found = false;
     let mut column = self.dimensions.columns;
     while !found && column > 0 {
@@ -642,7 +642,7 @@ impl<'a> SubGrid<'a> {
     &self,
     cell_column: usize,
     cell_row: usize,
-    option: usize
+    option: u64
   ) -> bool {
     // Check if option removed from column
     let mut option_found = false;
@@ -665,7 +665,7 @@ impl<'a> SubGrid<'a> {
     &self,
     cell_column: usize,
     cell_row: usize,
-    removed_option: usize
+    removed_option: u64
   ) -> bool {
     // Check if option removed from row
     let mut option_found = false;

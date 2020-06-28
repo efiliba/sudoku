@@ -99,7 +99,7 @@ mod strikes_out_options_in_3x2_sub_grid {
 
     let remove_from_row = struck_out_cells.removed_options_from_row;  // Removed 1 from row 1
     assert_eq!(remove_from_row.len(), 1);
-    assert_eq!(remove_from_row[0].cell_row, remove_bit);
+    assert_eq!(remove_from_row[0].cell_row, 1);
     assert_eq!(remove_from_column[0].bits, remove_bit);
 
     let mut expected_cells = super::init_cells(&dimensions);

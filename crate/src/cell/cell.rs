@@ -8,7 +8,7 @@ pub struct Cell<'a> {
 
   pub column: usize,
   pub row: usize,
-  pub options: usize,
+  pub options: u64,
   // pub json: JsonCell,
   pub total_options_remaining: usize,
 
@@ -166,7 +166,7 @@ impl<'a> Cell<'a> {
   //     cell.highlight = !cell.highlight;
   //   }
 
-  pub fn remove_option(&mut self, option: usize) -> bool {
+  pub fn remove_option(&mut self, option: u64) -> bool {
     // Return if last option left after removing this option
     let mut last_option_found = false;
 
@@ -189,7 +189,7 @@ impl<'a> Cell<'a> {
     last_option_found
   }
 
-  pub fn remove_options(&mut self, remove: usize) -> bool {
+  pub fn remove_options(&mut self, remove: u64) -> bool {
     let mut last_option_found = false;
 
     let mut remove_options = self.options & remove;
@@ -229,7 +229,7 @@ impl<'a> Cell<'a> {
     self.clear_all_except_at_position(self.set_column, self.set_row, self.set_method);
   }
 
-  pub fn set_by_option(&mut self, option: usize, set_method: SetMethod) {
+  pub fn set_by_option(&mut self, option: u64, set_method: SetMethod) {
     self.set_by_index(power_of_2_bit_positions(option), set_method);
   }
 
@@ -237,7 +237,7 @@ impl<'a> Cell<'a> {
     self.set_by_index(find_symbol_index(symbol), set_method);
   }
 
-  pub fn contains_option(&self, option: usize) -> bool {
+  pub fn contains_option(&self, option: u64) -> bool {
     self.options & option > 0
   }
 
@@ -246,7 +246,7 @@ impl<'a> Cell<'a> {
     (self.options & bit) > 0
   }
 
-  pub fn contains_options(&self, check_options: usize) -> bool {
+  pub fn contains_options(&self, check_options: u64) -> bool {
     self.options & check_options == check_options
   }
 
@@ -254,7 +254,7 @@ impl<'a> Cell<'a> {
     self.options & 1 << find_symbol_index(symbol) > 0
   }
 
-  fn set_remaining_option(&mut self, options: usize) {
+  fn set_remaining_option(&mut self, options: u64) {
     let index = highest_bit_position(options);
     self.set_column = index % self.dimensions.columns;
     self.set_row = index / self.dimensions.columns >> 0;

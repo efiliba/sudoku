@@ -8,7 +8,7 @@ mod grid_test;
 pub struct LimitedBitOption {                                       // Options limited to a column, row or both (sub-grid)
   pub column: usize,
   pub row: usize,
-  pub options: usize
+  pub options: u64
 }
 
 pub struct UnsetCells<'a> {

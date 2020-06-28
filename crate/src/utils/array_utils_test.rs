@@ -1,5 +1,5 @@
 #[cfg(test)]
-fn compare(actual: Vec<Vec<usize>>, expected: Vec<Vec<usize>>) -> bool {
+fn compare(actual: Vec<Vec<u64>>, expected: Vec<Vec<u64>>) -> bool {
   let equal = actual.len() == expected.len();
   let mut index = 0;
   let mut iterator = expected.iter();
@@ -39,14 +39,14 @@ mod array_utils {
       vec![17, 18]
     ];
 
-    let actual: Vec<&[usize]> = square_rows(&rows);
+    let actual: Vec<&[u64]> = square_rows(&rows);
 
     assert!(super::compare(actual.iter().map(|x| x.to_vec()).collect(), expected));
   }
 
   #[test]
   fn it_re_combines_rows_at_alternating_root() {
-    let rows: Vec<&[usize]> = vec![
+    let rows: Vec<&[u64]> = vec![
       &[1, 2],
       &[3, 4],
       &[5, 6],

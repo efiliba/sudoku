@@ -13,7 +13,9 @@ pub fn solve(columns: usize, rows: usize, input: Vec<usize>) -> Vec<usize> {
   let dimensions = Dimensions::new(columns, rows);
   let mut grid = Grid::new(&dimensions);
 
-  grid.load(&input);
+  let u64_input = input.iter().map(|&x| x as u64).collect::<Vec<u64>>();
+  grid.load(&u64_input);
+
 
   // grid.set_by_symbol(0, 0, 2, 1, '2', SetMethod::Loaded);
   // grid.set_by_symbol(1, 0, 0, 0, '1', SetMethod::Loaded);
@@ -29,7 +31,7 @@ pub fn solve(columns: usize, rows: usize, input: Vec<usize>) -> Vec<usize> {
   grid.solve();
   // grid.to_array()
 
-  println!("TEST: {:#}", grid);
+  // println!("TEST: {:#}", grid);
 
   input
 }

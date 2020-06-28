@@ -79,7 +79,7 @@ impl<'a> Grid<'a> {
     equal
   }
 
-  pub fn available_options_rows(&self) -> Vec<Vec<usize>> {
+  pub fn available_options_rows(&self) -> Vec<Vec<u64>> {
     let mut options_rows = Vec::with_capacity(self.dimensions.total);
     for row in 0..self.dimensions.rows {
       for column in 0..self.dimensions.columns {
@@ -183,7 +183,7 @@ impl<'a> Grid<'a> {
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
-    option: usize
+    option: u64
   ): bool {
     let cell: ICell = self.sub_grids[sub_grid_row][sub_grid_column].get(
       cell_column,
@@ -216,9 +216,10 @@ impl<'a> Grid<'a> {
     only_option_found
   }
   
-  pub fn load(&mut self, input: &Vec<usize>) {
-
+  pub fn load(&mut self, input: &Vec<u64>) {
     println!("LOAD: {:?}", input);
+    let output = array_utils::group_by_root(input);
+    println!("output: {:?}", output);
 
     // let size: usize = self.dimensions.columns * self.dimensions.rows;
     // let cells: ICell[] = [];
@@ -421,7 +422,7 @@ impl<'a> Grid<'a> {
             let cell_column: usize = cell.getColumn();
             const cell_row: usize = cell.getRow();
 
-            let tryOption: usize = options & ~(options - 1); // lowest set bit value
+            let tryOption: u64 = options & ~(options - 1); // lowest set bit value
             while (tryOption && valid) {
               self.setByOption(
                 column,
@@ -483,7 +484,7 @@ impl<'a> Grid<'a> {
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
-    option: usize
+    option: u64
   ) {
     let mut struck_out_cells = self.sub_grids[sub_grid_row][sub_grid_column]
       .strike_out_cell(cell_column, cell_row, option);
@@ -592,7 +593,7 @@ impl<'a> Grid<'a> {
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
-    option: usize,
+    option: u64,
     set_method: SetMethod
   ) {
     if self.sub_grids[sub_grid_row][sub_grid_column].set_by_option(cell_column, cell_row, option, set_method) {
@@ -717,7 +718,7 @@ impl<'a> Grid<'a> {
   }
 
   public fixByCsv(options: string) {
-    let option: usize;
+    let option: u64;
     for (let sub_grid_row: usize = 0; sub_grid_row < self.dimensions.rows; sub_grid_row++) {
       for (
         let sub_grid_column: usize = 0;
@@ -826,7 +827,7 @@ impl<'a> Grid<'a> {
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
-    option: usize
+    option: u64
   ): bool {
     let last_options: IOption[] = [];
 
@@ -901,7 +902,7 @@ impl<'a> Grid<'a> {
     let mut limited_options: Vec<LimitedBitOption> = Vec::new();
     let mut unset_cells: Vec<&Cell> = Vec::new();
     let mut pick_options: Vec<&Cell> = Vec::new();
-    let mut combination_options: Vec<usize> = Vec::new();
+    let mut combination_options: Vec<u64> = Vec::new();
 
     for cell_index in 0..self.dimensions.total {
       unset_cells.clear();
@@ -1149,7 +1150,7 @@ impl<'a> Grid<'a> {
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_column: usize,
-    options: usize
+    options: u64
   ) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
@@ -1182,7 +1183,7 @@ impl<'a> Grid<'a> {
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_row: usize,
-    options: usize
+    options: u64
   ) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
@@ -1301,7 +1302,7 @@ impl<'a> Grid<'a> {
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_column: usize,
-    option: usize
+    option: u64
   ) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
@@ -1360,7 +1361,7 @@ impl<'a> Grid<'a> {
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_row: usize,
-    option: usize
+    option: u64
   ) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
@@ -1417,7 +1418,7 @@ impl<'a> Grid<'a> {
   // Convert sub grids to coluns * rows matrix
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  fn get_available_options_matrix(&self) -> Vec<Vec<usize>> {
+  fn get_available_options_matrix(&self) -> Vec<Vec<u64>> {
     // Get state of current grid - returned as an n*m matrix (not separated by sub grids)
     let mut matrix = Vec::with_capacity(self.dimensions.total);
     for _ in 0..self.dimensions.total {
@@ -1440,7 +1441,7 @@ impl<'a> Grid<'a> {
     matrix
   }
 
-  fn get_transposed_available_options_matrix(&self) -> Vec<Vec<usize>> {
+  fn get_transposed_available_options_matrix(&self) -> Vec<Vec<u64>> {
     // Get state of current grid - returned as a transposed n*m matrix (not separated by sub grids)
     let mut matrix = Vec::with_capacity(self.dimensions.total);
     for _ in 0..self.dimensions.total {

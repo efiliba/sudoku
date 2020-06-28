@@ -294,6 +294,9 @@ mod grid_3x2 {
 
   #[test]
   fn it_solves_a_2x3_grid() {
+
+    // TODO
+    
     let columns = 2;
     let rows = 3;
     let dimensions = Dimensions::new(columns, rows);

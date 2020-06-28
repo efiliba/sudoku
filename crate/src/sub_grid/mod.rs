@@ -10,7 +10,7 @@ pub struct BitOption {
   pub sub_grid_row: usize,
   pub cell_column: usize,
   pub cell_row: usize,
-  pub bits: usize
+  pub bits: u64
 }
 
 pub struct StruckOutCells {

@@ -178,7 +178,7 @@ mod highest_bit_position {
 
   #[test]
   fn it_should_match_highest_bit_position_function() {
-    fn local_highest_bit_position(value: usize) -> usize {
+    fn local_highest_bit_position(value: u64) -> usize {
       let mut index = 0;
       let mut bit = 1;
       while bit <= value {
@@ -191,7 +191,7 @@ mod highest_bit_position {
 
     let mut acc = 0;
     for index in 0..63 {
-      let power = usize::pow(2, index);
+      let power = u64::pow(2, index);
       acc += power;
       assert_eq!(highest_bit_position(power), index as usize);
       assert_eq!(highest_bit_position(acc), local_highest_bit_position(acc));

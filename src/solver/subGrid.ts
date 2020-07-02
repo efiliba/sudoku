@@ -546,6 +546,9 @@ export class SubGrid implements ISubGrid {
 		let index = 0;
 		for (let row = 0; row < SubGrid.rows; row++) {
 			for (let column = 0; column < SubGrid.columns; column++) {
+
+				// Use setByOption instead - when option not 0
+				
 				this.cells[row][column].loadOptions(options[index++]);
 			}
 		}

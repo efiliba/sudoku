@@ -691,4 +691,19 @@ impl<'a> SubGrid<'a> {
       }
     }
   }
+
+  pub fn load(&mut self, options: &Vec<u64>) {
+    let mut option_iter = options.iter();
+    for row in 0..self.dimensions.rows {
+      for column in 0..self.dimensions.columns {
+        match option_iter.next() {
+          None => {},
+          Some(0) => {},
+          Some(option) => {
+            self.cells[row][column].set_by_option(*option, SetMethod::Loaded);
+          }
+        }
+      }
+    }
+  }
 }

@@ -28,10 +28,25 @@ pub fn solve(columns: usize, rows: usize, input: Vec<usize>) -> Vec<usize> {
   // grid.set_by_symbol(0, 2, 2, 1, '1', SetMethod::Loaded);
   // grid.set_by_symbol(1, 2, 0, 0, '6', SetMethod::Loaded);
 
+  // calls strike_out - which 'solves' the grid
+// grid.set_by_symbol(0, 0, 0, 0, '1', SetMethod::Loaded);
+// grid.set_by_symbol(0, 0, 1, 1, '2', SetMethod::Loaded);
+// grid.set_by_symbol(1, 1, 0, 0, '3', SetMethod::Loaded);
+// grid.set_by_symbol(1, 1, 1, 1, '4', SetMethod::Loaded);
+
+// grid.set_by_symbol(1, 0, 0, 0, '4', SetMethod::Loaded);
+
   grid.solve();
   // grid.to_array()
 
-  // println!("TEST: {:#}", grid);
+// [1, 4, 8, 2]
+// [8, 2, 1, 4]
+// [2, 8, 4, 1]
+// [4, 1, 2, 8]
+
+  println!("input: {:?}", input);
+  println!("TEST: {:#}", grid);
+  println!("================");
 
   input
 }

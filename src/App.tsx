@@ -28,7 +28,8 @@ const App: React.FC = () => {
     try {
       // const input = new Uint32Array(grid.save().map(({options}) => options));
       // const input = new BigUint64Array([1n, 15n, 8n, 15n, 15n, 2n, 15n, 15n, 15n, 15n, 4n, 15n, 15n, 15n, 15n, 8n]);
-      const input = new Uint32Array([1, 15, 8, 15, 15, 2, 15, 15, 15, 15, 4, 15, 15, 15, 15, 8]);
+      // const input = new Uint32Array([1, 15, 8, 15, 15, 2, 15, 15, 15, 15, 4, 15, 15, 15, 15, 8]);
+      const input = new Uint32Array([1, 0, 8, 0, 0, 2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 8]);
 
       const wasm = await import('wasm');
       const solved = Array.from(wasm.solve(columns, rows, input));

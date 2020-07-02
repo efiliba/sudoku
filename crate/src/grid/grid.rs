@@ -208,7 +208,8 @@ impl<'a> Grid<'a> {
   pub fn simplify(&mut self) -> bool {
     let mut only_option_found = false;
 
-    // Check/remove only options in columns/rows/sub-grids and mulitipe options limited to a certain number of related cells i.e. if 2 cells in a row can only contain 1 or 2 => remove from other cells in row
+    // Check/remove only options in columns/rows/sub-grids and mulitipe options limited to a certain number of
+    //   related cells i.e. if 2 cells in a row can only contain 1 or 2 => remove from other cells in row
     while self.remove_only_options() || self.check_limited_options() {
       only_option_found = true;
     }
@@ -217,36 +218,15 @@ impl<'a> Grid<'a> {
   }
   
   pub fn load(&mut self, input: &Vec<u64>) {
-    println!("LOAD: {:?}", input);
-    let output = array_utils::group_by_root(input);
-    println!("output: {:?}", output);
+    let grouped = array_utils::group_by_root(input);
+    let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
 
-    // let size: usize = self.dimensions.columns * self.dimensions.rows;
-    // let cells: ICell[] = [];
-
-    // for (let sub_grid_row: usize = 0; sub_grid_row < self.dimensions.rows; sub_grid_row++) {
-    //   for (
-    //     let sub_grid_column: usize = 0;
-    //     sub_grid_column < self.dimensions.columns;
-    //     sub_grid_column++
-    //   ) {
-    //     let sub_matrix = self.sub_grids[sub_grid_row][
-    //       sub_grid_column
-    //     ].get_cells_matrix();
-    //     for (let cell_row = 0; cell_row < self.dimensions.columns; cell_row++) {
-    //       for (let cell_column = 0; cell_column < self.dimensions.rows; cell_column++) {
-    //         cells[
-    //           sub_grid_row * size * self.dimensions.columns +
-    //             sub_grid_column * self.dimensions.rows +
-    //             cell_row * size +
-    //             cell_column
-    //         ] = sub_matrix[cell_row][cell_column];
-    //       }
-    //     }
-    //   }
-    // }
-
-    // return cells;
+    let mut sub_group_iter = transposed.iter();
+    for row in 0..self.dimensions.rows {
+      for column in 0..self.dimensions.columns {
+        self.sub_grids[row][column].load(sub_group_iter.next().unwrap());
+      }
+    }
   }
 
 /*

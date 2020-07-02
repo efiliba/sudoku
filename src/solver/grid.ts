@@ -39,6 +39,7 @@ export interface IGrid {
 
 	isValid(): boolean;
 	save(): ICell[];
+	loadOptions(options: number[]): void;
 	strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): void;
 	isStruckOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string): boolean;        
 	fixByPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;

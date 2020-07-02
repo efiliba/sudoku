@@ -144,6 +144,21 @@ impl<'a> SubGrid<'a> {
     0
   }
 
+  pub fn set_by_index(
+    &mut self,
+    column: usize,
+    row: usize,
+    index: usize,
+    set_method: SetMethod
+  ) -> u64 {
+    let cell = &mut self.cells[row][column];
+    if cell.set_method == SetMethod::Unset {
+      cell.set_by_index(index, set_method);
+      return cell.options;
+    }
+    0
+  }
+
   pub fn compare(&self, items: &Vec<Vec<Cell>>) -> bool {
     let mut equal = true;
     let mut row = self.dimensions.rows;
@@ -692,15 +707,15 @@ impl<'a> SubGrid<'a> {
     }
   }
 
-  pub fn load(&mut self, options: &Vec<u64>) {
-    let mut option_iter = options.iter();
+  pub fn load(&mut self, symbol_positions: &Vec<u64>) {
+    let mut symbol_pos_iter = symbol_positions.iter();
     for row in 0..self.dimensions.rows {
       for column in 0..self.dimensions.columns {
-        match option_iter.next() {
+        match symbol_pos_iter.next() {
           None => {},
           Some(0) => {},
-          Some(option) => {
-            self.cells[row][column].set_by_option(*option, SetMethod::Loaded);
+          Some(symbol_pos) => {
+            self.cells[row][column].set_by_index((*symbol_pos - 1) as usize, SetMethod::Loaded);
           }
         }
       }

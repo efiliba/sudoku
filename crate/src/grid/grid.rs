@@ -217,14 +217,40 @@ impl<'a> Grid<'a> {
     only_option_found
   }
   
-  pub fn load(&mut self, input: &Vec<u64>) {
-    let grouped = array_utils::group_by_root(input);
+  // pub fn load(&mut self, input: &Vec<u64>) {
+  //   let grouped = array_utils::group_by_root(input);
+  //   let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
+
+  //   let mut sub_group_iter = transposed.iter();
+  //   for row in 0..self.dimensions.rows {
+  //     for column in 0..self.dimensions.columns {
+  //       self.sub_grids[row][column].load(sub_group_iter.next().unwrap());
+  //     }
+  //   }
+  // }
+
+  pub fn load(&mut self, positions: &Vec<u64>) {
+    let grouped = array_utils::group_by_root(positions);
     let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
 
-    let mut sub_group_iter = transposed.iter();
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
-        self.sub_grids[row][column].load(sub_group_iter.next().unwrap());
+    for sub_grid_row in 0..self.dimensions.rows {
+      for sub_grid_column in 0..self.dimensions.columns {
+        let sub_grid_positions = &transposed[sub_grid_row * self.dimensions.columns + sub_grid_column];
+        for cell_row in 0..self.dimensions.rows {
+          for cell_column in 0..self.dimensions.columns {
+            let pos = sub_grid_positions[cell_row * self.dimensions.columns + cell_column];
+            if pos > 0 {
+              self.set_by_index(
+                sub_grid_column,
+                sub_grid_row,
+                cell_column,
+                cell_row,
+                (pos - 1) as usize,
+                SetMethod::Loaded
+              );
+            }
+          }
+        }
       }
     }
   }
@@ -604,6 +630,34 @@ impl<'a> Grid<'a> {
 
     self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
   }
+  
+  pub fn set_by_index(
+    &mut self,
+    sub_grid_column: usize,
+    sub_grid_row: usize,
+    cell_column: usize,
+    cell_row: usize,
+    index: usize,
+    set_method: SetMethod
+  ) {
+    let option = self.sub_grids[sub_grid_row][sub_grid_column].set_by_index(
+      cell_column,
+      cell_row,
+      index,
+      set_method
+    );
+    if option > 0 {
+      self.total_set += 1;
+    }
+
+    self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
+  }
+
+  pub fn to_symbol_positions(&mut self) -> Vec<usize> {
+    self.available_options_rows().iter()
+      .flat_map(|x| x.iter().map(|&x| x  as usize)).collect()
+  }
+
 /*
   public setByPositionShallow(
     sub_grid_column: usize,

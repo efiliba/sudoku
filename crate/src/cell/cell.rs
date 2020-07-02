@@ -222,7 +222,7 @@ impl<'a> Cell<'a> {
     self.clear_all_except_at_position(self.set_column, self.set_row, self.set_method);
   }
 
-  fn set_by_index(&mut self, index: usize, set_method: SetMethod) {
+  pub fn set_by_index(&mut self, index: usize, set_method: SetMethod) {
     self.set_column = index % self.dimensions.columns;
     self.set_row = index / self.dimensions.columns >> 0;
     self.set_method = set_method;

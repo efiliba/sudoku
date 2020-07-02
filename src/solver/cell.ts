@@ -42,6 +42,7 @@ export interface ICell {
 	setByPosition(column: number, row: number, setMethod: SetMethod): void;
 	setByOption(option: number, setMethod: SetMethod): void;
 	setBySymbol(symbol: string, setMethod: SetMethod): void;
+	setByIndex(index: number, setMethod: SetMethod): void;
 	reset(): void;
 	containsOption(option: number): boolean;
 	containsOptionAtPosition(column: number, row: number): boolean;
@@ -227,7 +228,7 @@ export class Cell implements ICell {
 		this.clearAllExceptAtPosition(this.setColumn = column, this.setRow = row, this.setMethod = setMethod);
 	}
 
-	private setByIndex(index: number, setMethod: SetMethod) {
+	public setByIndex(index: number, setMethod: SetMethod) {
 		this.clearAllExceptAtPosition(this.setColumn = index % Cell.columns, this.setRow = index / Cell.columns >> 0, this.setMethod = setMethod);
 	}
 

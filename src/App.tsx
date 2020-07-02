@@ -10,11 +10,13 @@ import './App.scss';
 // // grid.setByPositionShallow(1, 0, 1, 0, 1, 0);
 // grid.setByPositionShallow(1, 0, 0, 0, 1, 1);
 
+const columns = 2;
+const rows = 2;
+solver.Grid.Constructor(columns, rows);
+const grid = new solver.Grid();
+
 const App: React.FC = () => {
-  const columns = 2;
-  const rows = 2;
-  solver.Grid.Constructor(columns, rows);
-  const grid = new solver.Grid();
+
 
   useEffect(() => {
     loadWasm();
@@ -29,11 +31,13 @@ const App: React.FC = () => {
       // const input = new Uint32Array(grid.save().map(({options}) => options));
       // const input = new BigUint64Array([1n, 15n, 8n, 15n, 15n, 2n, 15n, 15n, 15n, 15n, 4n, 15n, 15n, 15n, 15n, 8n]);
       // const input = new Uint32Array([1, 15, 8, 15, 15, 2, 15, 15, 15, 15, 4, 15, 15, 15, 15, 8]);
-      const input = new Uint32Array([1, 0, 8, 0, 0, 2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 8]);
+      // const input = new Uint32Array([1, 0, 8, 0, 0, 2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 8]);
+      const symbolPositions = new Uint32Array([1, 0, 4, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4]);
 
       const wasm = await import('wasm');
-      const solved = Array.from(wasm.solve(columns, rows, input));
-      grid.loadOptions(solved);
+      const solved = Array.from(wasm.solve(columns, rows, symbolPositions));
+      // grid.loadOptions(solved);
+      grid.loadSymbolPositions(solved);
       setGridData(grid.toJson());                                   // Update display
     } catch(err) {
       console.error(`Unexpected error in loadWasm. [Message: ${err.message}]`);

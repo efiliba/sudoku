@@ -40,6 +40,8 @@ export interface IGrid {
 	isValid(): boolean;
 	save(): ICell[];
 	loadOptions(options: number[]): void;
+	loadSymbolPositions(positions: number[]): void;
+
 	strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): void;
 	isStruckOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string): boolean;        
 	fixByPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): void;
@@ -327,6 +329,19 @@ export class Grid implements IGrid {
 			}
 		}
 	}
+
+	public loadSymbolPositions(positions: number[]) {
+		const size = Grid.columns * Grid.rows;
+		const grouped = groupBy(positions, size);
+		const transposed: number[][][] = transposeRows(Grid.columns, grouped);
+
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				this.subGrids[subGridRow][subGridColumn].loadSymbolPositions(transposed[subGridRow][subGridColumn])
+			}
+		}
+	}
+
 
 	private eliminate(unsetOptionsDepth: number, recursionLevel: number): boolean {
 		let cells: ICell[] = this.save();                           		// Save current state

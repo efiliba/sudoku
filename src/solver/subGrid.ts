@@ -58,6 +58,7 @@ export interface ISubGrid {
 	optionRemovedFromRow(cellColumn: number, cellRow: number, removedOption: number): boolean;
 	setCells(subGrid: ICell[][]): void;
 	loadOptions(options: number[]): void;
+	loadSymbolPositions(positions: number[]): void;
 }
 
 export class SubGrid implements ISubGrid {
@@ -550,6 +551,18 @@ export class SubGrid implements ISubGrid {
 				// Use setByOption instead - when option not 0
 				
 				this.cells[row][column].loadOptions(options[index++]);
+			}
+		}
+	}
+
+	public loadSymbolPositions(positions: number[]) {
+		let index = 0;
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
+				const pos = positions[index++];
+				if (pos > 0) {
+					this.cells[row][column].setByIndex(pos - 1, SetMethod.loaded);
+				}
 			}
 		}
 	}

@@ -8,12 +8,12 @@ const rows = 2;
 solver.Grid.Constructor(columns, rows);
 const grid = new solver.Grid();
 
-grid.setByPositionShallow(0, 0, 0, 0, 0, 0);
-grid.setByPositionShallow(0, 0, 1, 1, 1, 0);
-grid.setByPositionShallow(1, 1, 0, 0, 0, 1);
-grid.setByPositionShallow(1, 1, 1, 1, 1, 1);
-// grid.setByPositionShallow(1, 0, 1, 0, 1, 0);
-grid.setByPositionShallow(1, 0, 0, 0, 1, 1);
+// grid.setByPositionShallow(0, 0, 0, 0, 0, 0);
+// grid.setByPositionShallow(0, 0, 1, 1, 1, 0);
+// grid.setByPositionShallow(1, 1, 0, 0, 0, 1);
+// // grid.setByPositionShallow(1, 1, 1, 1, 1, 1);
+
+// grid.setByPositionShallow(1, 0, 0, 0, 1, 1);
 
 const App: React.FC = () => {
   const loadWasm = async () => {

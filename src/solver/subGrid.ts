@@ -551,8 +551,9 @@ export class SubGrid implements ISubGrid {
 		for (let row = 0; row < SubGrid.rows; row++) {
 			for (let column = 0; column < SubGrid.columns; column++) {
 				const option = options[index++];
-				if (isPowerOf2(option)) {
-					this.cells[row][column].setByOption(option, SetMethod.loaded);
+				const cell = this.cells[row][column];
+				if (!cell.setMethod && isPowerOf2(option)) {
+					cell.setByOption(option, SetMethod.calculated);
 				}
 			}
 		}

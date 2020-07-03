@@ -41,6 +41,8 @@ export interface IGrid {
 	save(): ICell[];
 	loadOptions(options: number[]): void;
 	loadSymbolPositions(positions: number[]): void;
+	toSymbolPositions(): number[];
+	toSetOptions(): number[];
 
 	strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): void;
 	isStruckOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, symbol: string): boolean;        
@@ -321,11 +323,12 @@ export class Grid implements IGrid {
 	public loadOptions(options: number[]) {
 		const size = Grid.columns * Grid.rows;
 		const grouped = groupBy(options, size);
-		const transposed: number[][][] = transposeRows(Grid.columns, grouped);
+		// const transposed: number[][][] = transposeRows(Grid.columns, grouped);
 
+		let index = 0;
 		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
 			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				this.subGrids[subGridRow][subGridColumn].loadOptions(transposed[subGridRow][subGridColumn])
+				this.subGrids[subGridRow][subGridColumn].loadOptions(grouped[index++])
 			}
 		}
 	}
@@ -342,6 +345,25 @@ export class Grid implements IGrid {
 		}
 	}
 
+	public toSymbolPositions() {
+		const positions: number[] = [];
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				positions.push(...this.subGrids[subGridRow][subGridColumn].toSymbolPositions());
+			}
+		}
+		return positions;
+	}
+
+	public toSetOptions() {
+		const options: number[] = [];
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				options.push(...this.subGrids[subGridRow][subGridColumn].toSetOptions());
+			}
+		}
+		return options;
+	}
 
 	private eliminate(unsetOptionsDepth: number, recursionLevel: number): boolean {
 		let cells: ICell[] = this.save();                           		// Save current state
@@ -890,17 +912,17 @@ export class Grid implements IGrid {
 	}
 
 	private removeOnlyRowOptions(): boolean {
-		let onlyOptionFound: boolean = false;
+		let onlyOptionFound = false;
 
-		let matrix: number[][] = this.getAvailableOptionsMatrix();
+		let matrix = this.getAvailableOptionsMatrix();
 
 		// Check for only options in each row
-		let row: number = Grid.rows * Grid.columns;
+		let row = Grid.rows * Grid.columns;
 		while (!onlyOptionFound && row--) {
 			const {found, bit}: IOnlyOption = onlyOption(matrix[row]);
 			if (found) {
 				onlyOptionFound = true;
-				let matrixColumn: number = containingBitIndex(matrix[row], bit);	// Column within grid where only option found                     
+				let matrixColumn = containingBitIndex(matrix[row], bit);		// Column within grid where only option found                     
 				this.setByOption(matrixColumn / Grid.rows >> 0, row / Grid.columns >> 0, matrixColumn % Grid.rows, row % Grid.columns, bit, SetMethod.calculated);
 			}
 		}
@@ -909,18 +931,18 @@ export class Grid implements IGrid {
 	}
 
 	private removeOnlySubGridOptions(): boolean {
-		let onlyOptionFound: boolean = false;
+		let onlyOptionFound = false;
 
 		// Check for only options in each sub grid
-		let row: number = Grid.rows;
+		let row = Grid.rows;
 		while (!onlyOptionFound && row--) {
-			let column: number = Grid.columns;
+			let column = Grid.columns;
 			while (!onlyOptionFound && column--) {
-				const values: number[] = this.subGrids[row][column].getAvailableOptions();
+				const values = this.subGrids[row][column].getAvailableOptions();
 				const {found, bit}: IOnlyOption = onlyOption(values);
 				if (found) {
 					onlyOptionFound = true;
-					let arrayIndex: number = containingBitIndex(values, bit); // Index within array where only option found                     
+					let arrayIndex = containingBitIndex(values, bit); // Index within array where only option found                     
 					this.setByOption(column, row, arrayIndex % Grid.rows, arrayIndex / Grid.rows >> 0, bit, SetMethod.calculated);
 				}
 			}
@@ -933,11 +955,11 @@ export class Grid implements IGrid {
 	private removeOptionFromOtherColumns(subGridColumn: number, subGridRow: number, cellColumn: number, option: number): IOption[] {
 		let lastOptions: IOption[] = [];
 
-		let totalExistingColumns: number = 0;
-		let totalExistingRows: number = 0;
+		let totalExistingColumns = 0;
+		let totalExistingRows = 0;
 
-		let existingColumn: number = -1;
-		let column: number = Grid.rows;                                	// Use SubGrid's number of columns i.e. swopped rows
+		let existingColumn = -1;
+		let column = Grid.rows;                                					// Use SubGrid's number of columns i.e. swopped rows
 		while (totalExistingColumns < 2 && --column > cellColumn) {
 			if (this.subGrids[subGridRow][subGridColumn].optionExistsInColumn(column, option)) {
 				existingColumn = column;
@@ -955,8 +977,8 @@ export class Grid implements IGrid {
 				lastOptions = this.removeOptionsFromColumn(subGridColumn, subGridRow, existingColumn, option);
 		} else {
 			// Check other sub grids in same column
-			let existingRow: number = -1;
-			let row: number = Grid.rows;
+			let existingRow = -1;
+			let row = Grid.rows;
 			while (totalExistingRows < 2 && --row > subGridRow) {
 				if (this.subGrids[row][subGridColumn].optionExistsInColumn(cellColumn, option)) {
 					existingRow = row;
@@ -982,11 +1004,11 @@ export class Grid implements IGrid {
 	private removeOptionFromOtherRows(subGridColumn: number, subGridRow: number, cellRow: number, option: number): IOption[] {
 		let lastOptions: IOption[] = [];
 
-		let totalExistingColumns: number = 0;
-		let totalExistingRows: number = 0;
+		let totalExistingColumns = 0;
+		let totalExistingRows = 0;
 
-		let existingRow: number = -1;
-		let row: number = Grid.columns;                              		// Use SubGrid's number of rows i.e. swopped columns
+		let existingRow = -1;
+		let row = Grid.columns;                              						// Use SubGrid's number of rows i.e. swopped columns
 		while (totalExistingRows < 2 && --row > cellRow) {
 			if (this.subGrids[subGridRow][subGridColumn].optionExistsInRow(row, option)) {
 				existingRow = row;
@@ -1004,8 +1026,8 @@ export class Grid implements IGrid {
 				lastOptions = this.removeOptionsFromRow(subGridColumn, subGridRow, existingRow, option);
 		} else {
 			// Check other sub grids in same row
-			let existingColumn: number = -1;
-			let column: number = Grid.columns;
+			let existingColumn = -1;
+			let column = Grid.columns;
 			while (totalExistingColumns < 2 && --column > subGridColumn) {
 				if (this.subGrids[subGridRow][column].optionExistsInRow(cellRow, option)) {
 					existingColumn = column;
@@ -1032,24 +1054,24 @@ export class Grid implements IGrid {
 	////////////////////////////////////////////////////////////////////////////////////////////
 
 	private getAvailableOptionsMatrix(): number[][] {              		// Get state of current grid - returned as an n*m matrix (not separated by sub grids)
-		let subGridRow: number = Grid.rows;
-		let matrixRow: number = subGridRow * Grid.columns;         			// Use SubGrid's number of rows i.e. swopped columns
+		let subGridRow = Grid.rows;
+		let matrixRow = subGridRow * Grid.columns;         							// Use SubGrid's number of rows i.e. swopped columns
 		let matrix: number[][] = [];
 
-		const subGridColumns: number = Grid.columns;
-		// const matrixColumns: number = subGridColumns * Grid.rows;      	// Use SubGrid's number of columns i.e. swopped rows
+		const subGridColumns = Grid.columns;
+		// const matrixColumns = subGridColumns * Grid.rows;      					// Use SubGrid's number of columns i.e. swopped rows
 		while (matrixRow--) {
 			matrix[matrixRow] = [];
 		}
 
 		while (subGridRow--) {
-			let subGridColumn: number = subGridColumns;
+			let subGridColumn = subGridColumns;
 			while (subGridColumn--) {
 				const subMatrix = this.subGrids[subGridRow][subGridColumn].getAvailableOptionsMatrix();
 
-				let cellColumn: number = Grid.rows;
+				let cellColumn = Grid.rows;
 				while (cellColumn--) {
-					let cellRow: number = Grid.columns;
+					let cellRow = Grid.columns;
 					while (cellRow--) {
 						matrix[subGridRow * Grid.columns + cellRow][subGridColumn * Grid.rows + cellColumn] = subMatrix[cellRow][cellColumn];
 					}
@@ -1061,24 +1083,24 @@ export class Grid implements IGrid {
 	}
 
 	private getTransposedAvailableOptionsMatrix(): number[][] {   		// Get state of current grid - returned as a transposed n*m matrix (not separated by sub grids)
-		let subGridColumn: number = Grid.columns;
-		let matrixColumn: number = subGridColumn * Grid.rows;          	// Use SubGrid's number of rows i.e. swopped columns
+		let subGridColumn = Grid.columns;
+		let matrixColumn = subGridColumn * Grid.rows;          					// Use SubGrid's number of rows i.e. swopped columns
 		let matrix: number[][] = [];
 
-		let subGridRows: number = Grid.rows;
-		// let matrixRows: number = subGridRows * Grid.columns;
+		let subGridRows = Grid.rows;
+		// let matrixRows = subGridRows * Grid.columns;
 		while (matrixColumn--) {
 			matrix[matrixColumn] = [];
 		}
 	
 		while (subGridColumn--) {
-			let subGridRow: number = subGridRows;
+			let subGridRow = subGridRows;
 			while (subGridRow--) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getAvailableOptionsMatrix();
 
-				let cellRow: number = Grid.columns;
+				let cellRow = Grid.columns;
 				while (cellRow--) {
-					let cellColumn: number = Grid.rows;
+					let cellColumn = Grid.rows;
 					while (cellColumn--) {
 						matrix[subGridColumn * Grid.rows + cellColumn][subGridRow * Grid.columns + cellRow] = subMatrix[cellRow][cellColumn];
 					}
@@ -1090,24 +1112,24 @@ export class Grid implements IGrid {
 	}
 
 	private getCellsMatrix(): ICell[][] {                            	// Get cells in current grid - returned as an n*m matrix (not separated by sub grids)
-		let subGridRow: number = Grid.rows;
-		let matrixRow: number = subGridRow * Grid.columns;              // Use SubGrid's number of rows i.e. swopped columns
+		let subGridRow = Grid.rows;
+		let matrixRow = subGridRow * Grid.columns;              				// Use SubGrid's number of rows i.e. swopped columns
 		let matrix: ICell[][] = [];
 
-		let subGridColumns: number = Grid.columns;
-		// let matrixColumns: number = subGridColumns * Grid.rows;        	// Use SubGrid's number of columns i.e. swopped rows
+		let subGridColumns = Grid.columns;
+		// let matrixColumns = subGridColumns * Grid.rows;        					// Use SubGrid's number of columns i.e. swopped rows
 		while (matrixRow--) {
 			matrix[matrixRow] = [];
 		}
 
 		while (subGridRow--) {
-			let subGridColumn: number = subGridColumns;
+			let subGridColumn = subGridColumns;
 			while (subGridColumn--) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getCellsMatrix();
 
-				let cellColumn: number = Grid.rows;
+				let cellColumn = Grid.rows;
 				while (cellColumn--) {
-					let cellRow: number = Grid.columns;
+					let cellRow = Grid.columns;
 					while (cellRow--) {
 						matrix[subGridRow * Grid.columns + cellRow][subGridColumn * Grid.rows + cellColumn] = subMatrix[cellRow][cellColumn];
 					}
@@ -1119,24 +1141,24 @@ export class Grid implements IGrid {
 	}
 
 	private getTransposedCellsMatrix(): ICell[][] {                   // Get state of current grid - returned as a transposed n*m matrix (not separated by sub grids)
-		let subGridColumn: number = Grid.columns;
-		let matrixColumn: number = subGridColumn * Grid.rows;           // Use SubGrid's number of rows i.e. swopped columns
+		let subGridColumn = Grid.columns;
+		let matrixColumn = subGridColumn * Grid.rows;           				// Use SubGrid's number of rows i.e. swopped columns
 		let matrix: ICell[][] = [];
 
-		let subGridRows: number = Grid.rows;
-		// let matrixRows: number = subGridRows * Grid.columns;
+		let subGridRows = Grid.rows;
+		// let matrixRows = subGridRows * Grid.columns;
 		while (matrixColumn--) {
 			matrix[matrixColumn] = [];
 		}
 
 		while (subGridColumn--) {
-			let subGridRow: number = subGridRows;
+			let subGridRow = subGridRows;
 			while (subGridRow--) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getCellsMatrix();
 
-				let cellRow: number = Grid.columns;
+				let cellRow = Grid.columns;
 				while (cellRow--) {
-					let cellColumn: number = Grid.rows;
+					let cellColumn = Grid.rows;
 					while (cellColumn--) {
 						matrix[subGridColumn * Grid.rows + cellColumn][subGridRow * Grid.columns + cellRow] = subMatrix[cellRow][cellColumn];
 					}

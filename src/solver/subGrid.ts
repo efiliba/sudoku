@@ -59,6 +59,8 @@ export interface ISubGrid {
 	setCells(subGrid: ICell[][]): void;
 	loadOptions(options: number[]): void;
 	loadSymbolPositions(positions: number[]): void;
+	toSymbolPositions(): number[];
+	toSetOptions(): number[];
 }
 
 export class SubGrid implements ISubGrid {
@@ -547,10 +549,10 @@ export class SubGrid implements ISubGrid {
 		let index = 0;
 		for (let row = 0; row < SubGrid.rows; row++) {
 			for (let column = 0; column < SubGrid.columns; column++) {
-
-				// Use setByOption instead - when option not 0
-				
-				this.cells[row][column].loadOptions(options[index++]);
+				const option = options[index++];
+				if (option > 0) {
+					this.cells[row][column].setByOption(option, SetMethod.loaded);
+				}
 			}
 		}
 	}
@@ -565,5 +567,25 @@ export class SubGrid implements ISubGrid {
 				}
 			}
 		}
+	}
+
+	public toSymbolPositions() {
+		const positions: number[] = [];
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
+				positions.push(this.cells[row][column].symbolPosition());
+			}
+		}
+		return positions;
+	}
+
+	public toSetOptions() {
+		const options: number[] = [];
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
+				options.push(this.cells[row][column].setOption());
+			}
+		}
+		return options;
 	}
 }

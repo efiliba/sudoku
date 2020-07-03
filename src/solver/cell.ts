@@ -51,7 +51,8 @@ export interface ICell {
 	removedOptionsPerRow(row: number): number[];
 	setJson(json: IJsonCell): void;
 
-	loadOptions(options: number): void;
+	symbolPosition(): number;
+	setOption(): number;
 }
 
 export class Cell implements ICell {
@@ -233,6 +234,7 @@ export class Cell implements ICell {
 	}
 
 	public setByOption(option: number, setMethod: SetMethod) {
+		// console.log(option)
 		this.setByIndex(powerOf2BitPositions[option], setMethod);
 	}
 
@@ -312,20 +314,11 @@ export class Cell implements ICell {
 		this.json = json;
 	}
 
-	public loadOptions(options: number) {
-		// debugger;
-		// console.log(options);
-		
-		const totalOptionsRemaining = numberOfBitsSet(options);
-		
-		if (totalOptionsRemaining === 1) {
-			this.setByOption(options, SetMethod.loaded);	// Can also optimise this
-		}
+	public symbolPosition() {
+		return this.setMethod ? this.setRow * Cell.columns + this.setColumn + 1: 0;
+	}
 
-		// else update this cell's state
-		// See logic in removeOptions(remove: number): boolean
-		// e.g.
-		// this.options = options;
-		// this.totalOptionsRemaining = totalOptionsRemaining;
+	public setOption() {
+		return this.setMethod ? this.options: 0;
 	}
 }

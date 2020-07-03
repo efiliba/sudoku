@@ -229,25 +229,18 @@ impl<'a> Grid<'a> {
   //   }
   // }
 
-  pub fn load(&mut self, positions: &Vec<u64>) {
-    let grouped = array_utils::group_by_root(positions);
-    let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
+  pub fn load(&mut self, options: &Vec<u64>) {
+    let grouped = array_utils::group_by_root(options);
+    // let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
 
     for sub_grid_row in 0..self.dimensions.rows {
       for sub_grid_column in 0..self.dimensions.columns {
-        let sub_grid_positions = &transposed[sub_grid_row * self.dimensions.columns + sub_grid_column];
+        let sub_grid_options = &grouped[sub_grid_row * self.dimensions.columns + sub_grid_column];
         for cell_row in 0..self.dimensions.rows {
           for cell_column in 0..self.dimensions.columns {
-            let pos = sub_grid_positions[cell_row * self.dimensions.columns + cell_column];
-            if pos > 0 {
-              self.set_by_index(
-                sub_grid_column,
-                sub_grid_row,
-                cell_column,
-                cell_row,
-                (pos - 1) as usize,
-                SetMethod::Loaded
-              );
+            let option = sub_grid_options[cell_row * self.dimensions.columns + cell_column];
+            if option > 0 {
+              self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option, SetMethod::Loaded);
             }
           }
         }
@@ -653,7 +646,7 @@ impl<'a> Grid<'a> {
     self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
   }
 
-  pub fn to_symbol_positions(&mut self) -> Vec<usize> {
+  pub fn to_options(&mut self) -> Vec<usize> {
     self.available_options_rows().iter()
       .flat_map(|x| x.iter().map(|&x| x  as usize)).collect()
   }

@@ -17,5 +17,5 @@ pub fn solve(columns: usize, rows: usize, input: Vec<usize>) -> Vec<usize> {
   grid.load(&u64_input);
   grid.solve();
 
-  grid.to_symbol_positions()
+  grid.to_options()
 }

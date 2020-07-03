@@ -4,16 +4,18 @@ import {Grid, ModifierKeys, IGridSelection, Legend} from './components';
 import './App.scss';
 
 const columns = 2;
-const rows = 2;
+const rows = 3;
 solver.Grid.Constructor(columns, rows);
 const grid = new solver.Grid();
 
-// grid.setByPositionShallow(0, 0, 0, 0, 0, 0);
-// grid.setByPositionShallow(0, 0, 1, 1, 1, 0);
-// grid.setByPositionShallow(1, 1, 0, 0, 0, 1);
-// // grid.setByPositionShallow(1, 1, 1, 1, 1, 1);
-
-// grid.setByPositionShallow(1, 0, 0, 0, 1, 1);
+const hard2x3 = [
+  0, 0, 0, 1, 0, 0,  
+  0, 0, 2, 0, 0, 3,  
+  4, 0, 0, 3, 0, 0,  
+  0, 0, 3, 0, 0, 5,  
+  3, 0, 0, 6, 0, 0,  
+  0, 0, 1, 0, 0, 0  
+];
 
 const App: React.FC = () => {
   const loadWasm = async () => {
@@ -26,6 +28,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadWasm();
+
+    grid.loadPuzzle(hard2x3);
+    setGridData(grid.toJson());
   }, []);
 
   const [gridData, setGridData] = useState(grid.toJson());

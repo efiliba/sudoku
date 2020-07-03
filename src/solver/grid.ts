@@ -39,8 +39,8 @@ export interface IGrid {
 
 	isValid(): boolean;
 	save(): ICell[];
+	loadPuzzle(symbolPositions: number[]): void;
 	loadOptions(options: number[]): void;
-	loadSymbolPositions(positions: number[]): void;
 	toSymbolPositions(): number[];
 	toSetOptions(): number[];
 
@@ -320,27 +320,26 @@ export class Grid implements IGrid {
 		return cells;
 	}
 
-	public loadOptions(options: number[]) {
+	public loadPuzzle(symbolPositions: number[]) {
 		const size = Grid.columns * Grid.rows;
-		const grouped = groupBy(options, size);
-		// const transposed: number[][][] = transposeRows(Grid.columns, grouped);
-
-		let index = 0;
-		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
-			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				this.subGrids[subGridRow][subGridColumn].loadOptions(grouped[index++])
-			}
-		}
-	}
-
-	public loadSymbolPositions(positions: number[]) {
-		const size = Grid.columns * Grid.rows;
-		const grouped = groupBy(positions, size);
+		const grouped = groupBy(symbolPositions, size);
 		const transposed: number[][][] = transposeRows(Grid.columns, grouped);
 
 		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
 			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
 				this.subGrids[subGridRow][subGridColumn].loadSymbolPositions(transposed[subGridRow][subGridColumn])
+			}
+		}
+	}
+
+	public loadOptions(options: number[]) {
+		const size = Grid.columns * Grid.rows;
+		const grouped = groupBy(options, size);
+
+		let index = 0;
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				this.subGrids[subGridRow][subGridColumn].loadOptions(grouped[index++])
 			}
 		}
 	}

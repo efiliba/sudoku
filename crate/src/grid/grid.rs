@@ -231,14 +231,13 @@ impl<'a> Grid<'a> {
 
   pub fn load(&mut self, options: &Vec<u64>) {
     let grouped = array_utils::group_by_root(options);
-    // let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
 
     for sub_grid_row in 0..self.dimensions.rows {
       for sub_grid_column in 0..self.dimensions.columns {
         let sub_grid_options = &grouped[sub_grid_row * self.dimensions.columns + sub_grid_column];
-        for cell_row in 0..self.dimensions.rows {
-          for cell_column in 0..self.dimensions.columns {
-            let option = sub_grid_options[cell_row * self.dimensions.columns + cell_column];
+        for cell_column in 0..self.dimensions.rows {
+          for cell_row in 0..self.dimensions.columns {
+            let option = sub_grid_options[cell_column * self.dimensions.columns + cell_row];  // swopped.rows
             if option > 0 {
               self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option, SetMethod::Loaded);
             }

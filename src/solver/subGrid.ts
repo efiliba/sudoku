@@ -1,3 +1,4 @@
+import {isPowerOf2} from "./utils/bitUtilities";
 import {Cell, SetMethod, ICell, IJsonCell} from "./cell";
 
 export interface IOption {
@@ -550,7 +551,7 @@ export class SubGrid implements ISubGrid {
 		for (let row = 0; row < SubGrid.rows; row++) {
 			for (let column = 0; column < SubGrid.columns; column++) {
 				const option = options[index++];
-				if (option > 0) {
+				if (isPowerOf2(option)) {
 					this.cells[row][column].setByOption(option, SetMethod.loaded);
 				}
 			}

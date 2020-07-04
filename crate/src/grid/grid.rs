@@ -1362,11 +1362,11 @@ impl<'a> Grid<'a> {
         if self.sub_grids[row][sub_grid_column].option_exists_in_column(cell_column, option) {
           existing_row = row;
           total_existing_rows += 1;
-          row -= 1;
         }
+        row -= 1;
       }
       while total_existing_rows < 2 && row > 0 {
-        row -= 0;
+        row -= 1;
         if self.sub_grids[row][sub_grid_column].option_exists_in_column(cell_column, option) {
           existing_row = row;
           total_existing_rows += 1;

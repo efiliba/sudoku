@@ -235,9 +235,9 @@ impl<'a> Grid<'a> {
     for sub_grid_row in 0..self.dimensions.rows {
       for sub_grid_column in 0..self.dimensions.columns {
         let sub_grid_options = &grouped[sub_grid_row * self.dimensions.columns + sub_grid_column];
-        for cell_column in 0..self.dimensions.rows {
-          for cell_row in 0..self.dimensions.columns {
-            let option = sub_grid_options[cell_column * self.dimensions.columns + cell_row];  // swopped.rows
+        for cell_row in 0..self.dimensions.columns {                // dimensions columns & rows swopped
+          for cell_column in 0..self.dimensions.rows {
+            let option = sub_grid_options[cell_row * self.dimensions.rows + cell_column];
             if option > 0 {
               self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option, SetMethod::Loaded);
             }

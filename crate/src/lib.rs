@@ -14,7 +14,7 @@ pub fn solve(columns: usize, rows: usize, input: Vec<usize>) -> Vec<usize> {
   let mut grid = Grid::new(&dimensions);
 
   let u64_input = input.iter().map(|&x| x as u64).collect::<Vec<u64>>();
-  grid.load(&u64_input);
+  grid.load_set_options(&u64_input);
   grid.solve();
 
   grid.to_options()

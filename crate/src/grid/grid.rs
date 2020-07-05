@@ -3,7 +3,7 @@ use crate::utils::combinations::Combinations;
 use crate::utils::bit_utils::{number_of_bits_set, bitwise_or, only_option, containing_bit_index};
 use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, SYMBOLS};
 use crate::sub_grid::{sub_grid::SubGrid, BitOption, StruckOutCells};
-use crate::grid::{LimitedBitOption};
+use crate::grid::{LimitedBitOption, UnsetCells};
 use crate::utils::array_utils;
 
 #[derive(Debug)]
@@ -90,6 +90,14 @@ impl<'a> Grid<'a> {
     options_rows
   }
 
+  pub fn set_options(&mut self, options: &Vec<Vec<u64>>) {
+    for row in 0..self.dimensions.rows {
+      for column in 0..self.dimensions.columns {
+        self.sub_grids[row][column].set_options(&options[row * self.dimensions.columns + column]);
+      }
+    }
+  }
+
   // pub fn available_options_rows(&self) -> Vec<Vec<usize>> {
   //   let mut options_rows = Vec::with_capacity(self.dimensions.rows);
   //   for row in 0..self.dimensions.rows {
@@ -104,13 +112,20 @@ impl<'a> Grid<'a> {
   // }
 
   pub fn solve(&mut self) -> bool {
-    self.simplify();
+    // Repeat while an only option found or an option removed
+    let mut eliminated = true;
+    while eliminated {
+      while self.simplify() {
+      }
+		  eliminated = self.eliminate();                                // Restart simplify -> eliminate loop
+    }
+
     self.solved()
   }
 
   // pub fn solve({
   //   restart,
-  //   eliminateAfter = 0,
+  //   eliminateAfter = 0,                            - NOT NEEDED
   //   maxRecursionLevel = 1,
   // }: {
   //   restart?: bool;
@@ -118,7 +133,7 @@ impl<'a> Grid<'a> {
   //   maxRecursionLevel?: usize;
   // } = {}): bool {
   //   if (restart) {
-  //     self.strikeOutFromSetCells();
+  //     self.strikeOutFromSetCells();                  - MIGHT NOT BE NEEDED
   //   }
 
   //   do {
@@ -177,34 +192,36 @@ impl<'a> Grid<'a> {
       return false;
     }
   }
-
-  public removeOption(
+*/
+  fn remove_option(&self,
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
     option: u64
-  ): bool {
-    let cell: ICell = self.sub_grids[sub_grid_row][sub_grid_column].get(
-      cell_column,
-      cell_row
-    );
-    if (cell.removeOption(option)) {
-      // Check if last option left
-      self.total_set++;
-      self.strike_out(
-        sub_grid_column,
-        sub_grid_row,
-        cell_column,
-        cell_row,
-        cell.options
-      ); // Remaining option
-      return true;
-    } else {
-      return false;
-    }
+  ) -> bool {
+    // let cell: ICell = self.sub_grids[sub_grid_row][sub_grid_column].get(
+    //   cell_column,
+    //   cell_row
+    // );
+    // if (cell.removeOption(option)) {
+    //   // Check if last option left
+    //   self.total_set++;
+    //   self.strike_out(
+    //     sub_grid_column,
+    //     sub_grid_row,
+    //     cell_column,
+    //     cell_row,
+    //     cell.options
+    //   ); // Remaining option
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+
+    false
   }
-*/  
+
   pub fn simplify(&mut self) -> bool {
     let mut only_option_found = false;
 
@@ -229,7 +246,7 @@ impl<'a> Grid<'a> {
   //   }
   // }
 
-  pub fn load(&mut self, options: &Vec<u64>) {
+  pub fn load_set_options(&mut self, options: &Vec<u64>) {
     let grouped = array_utils::group_by_root(options);
 
     for sub_grid_row in 0..self.dimensions.rows {
@@ -270,15 +287,19 @@ impl<'a> Grid<'a> {
 
     return rows;
   }
+*/
 
-  public isValid(): bool {
-    const valid: bool =
-      self.matrixValid(self.get_transposed_cells_matrix()) &&
-      self.matrixValid(self.get_cells_matrix()); // Check columns and rows contain all options and no set cell duplicted
+  fn is_valid(&self) -> bool {
+    // let valid =
+    //   self.matrixValid(self.get_transposed_cells_matrix()) &&
+    //   self.matrixValid(self.get_cells_matrix()); // Check columns and rows contain all options and no set cell duplicted
 
-    return valid;
+    // return valid;
+
+    false
   }
 
+/*
   fn matrixValid(matrix: ICell[][]): bool {
     let valid: bool = true;
     const size: usize = self.dimensions.columns * self.dimensions.rows;
@@ -388,94 +409,129 @@ impl<'a> Grid<'a> {
 
     return cells;
   }
+*/
 
-  fn eliminate(
-    unsetOptionsDepth: usize,
-    recursionLevel: usize
-  ): bool {
-    let cells: ICell[] = self.save(); // Save current state
-    let saveTotalSet: usize = self.total_set;
+  fn eliminate(&mut self) -> bool {
+    let save = self.available_options_rows();                       // Save current state
+    let save_total_set = self.total_set;
+  
+    // println!("*** 1: {:?}", save);
 
-    let valid: bool = true;
-    let totalUnsetOptions: usize = 1;
-    while (valid && ++totalUnsetOptions < unsetOptionsDepth) {
-      let row: usize = self.dimensions.rows;
-      while (valid && row-- > 0) {
-        let column = self.dimensions.columns;
-        while (valid && column-- > 0) {
-          let unset_cells: IUnsetCells = self.unset_cells(
-            column,
-            row,
-            totalUnsetOptions
-          ); // May reduce column and row indices
-          column = unset_cells.column;
-          row = unset_cells.row;
 
-          let index: usize = unset_cells.cells.len();
+    let mut valid = true;
+    let mut total_unset_options = 1;
+    while valid {
+      let mut row_pos = self.dimensions.rows;
+
+      while valid && row_pos > 0 {
+      // while (valid && row_pos-- > 0) {   // MAY be set bellow 0
+        
+        // Could use pos instead of index ???
+        println!("*** row_pos: {}", row_pos);
+
+        // row_pos -= 1;
+        let mut column_pos = self.dimensions.columns;
+        while valid && column_pos > 0 {
+
+          println!("***** column_pos: {}", column_pos);
+
+          // column_pos -= 1;
+  //         let unset_cells: IUnsetCells = self.unset_cells(
+          let unset_cells = self.unset_cells(column_pos, row_pos, total_unset_options); // May reduce column and row indices
+          column_pos = unset_cells.column; // MAY need to +1
+          row_pos = unset_cells.row;
+
+          let mut index = unset_cells.cells.len();
           while valid && index > 0 {
-            index -= 0;
-            let cell: ICell = unset_cells.cells[index];
 
-            let options: usize = cell.options;
-            let cell_column: usize = cell.getColumn();
-            const cell_row: usize = cell.getRow();
+            println!("******* index: {}", index);
 
-            let tryOption: u64 = options & ~(options - 1); // lowest set bit value
-            while (tryOption && valid) {
-              self.setByOption(
-                column,
-                row,
-                cell_column,
-                cell_row,
-                tryOption,
-                SetMethod.calculated
-              );
-              self.solve({
-                eliminateAfter: unsetOptionsDepth,
-                maxRecursionLevel: recursionLevel - 1,
-              });
-              valid = self.isValid();
-              self.load(cells); // Reset
-              self.total_set = saveTotalSet;
+            index -= 1;
+            let cell = unset_cells.cells[index];
 
-              if (valid) {
-                options -= tryOption; // remove tried option
-                tryOption = options & ~(options - 1);
+            let mut options = cell.options;
+            let cell_column = cell.column;
+            let cell_row = cell.row;
+
+            // println!("+++++++++ {} {} {}", options, cell_column, cell_row);
+
+            let mut try_option = options & !(options - 1); // lowest set bit value
+            while try_option > 0 && valid {
+              // self.set_by_option(
+              //   column_pos - 1,
+              //   row_pos - 1,
+              //   cell_column,
+              //   cell_row,
+              //   try_option,
+              //   SetMethod::Calculated
+              // );
+              // self.solve();
+              // valid = self.is_valid();
+
+              // self.set_options(&save);                              // Reset
+              // self.total_set = save_total_set;
+
+              if valid {
+                options -= try_option;                              // remove tried option
+                try_option = options & !(options - 1);
               } else {
-                self.removeOption(column, row, cell_column, cell_row, tryOption); // Remove tryOption i.e. resulted in an invalid state
+                 // Remove try_option i.e. resulted in an invalid state
+                // self.remove_option(column_pos - 1, row_pos - 1, cell_column, cell_row, try_option);
               }
             }
           }
+
+          column_pos -= 1;
+        }
+
+        row_pos -= 1;
+      }
+      valid = false;
+    }
+
+
+  //   return !valid; // Option removed?
+  // }
+
+
+    println!("2: {:?}", self.to_options());
+
+    // Load without solving / simplifying
+    // use set_by_option_shallow ???
+
+    // [48, 4, 56, 49, 57, 2, 1, 58, 42, 24, 56, 4, 8, 51, 48, 35, 35, 4, 4, 35, 35, 10, 43, 16, 4, 26, 24, 50, 58, 1, 32, 27, 11, 26, 4, 10]
+    
+    false
+  }
+
+  fn unset_cells(&mut self, column: usize, row: usize, total_unset_options: usize) -> UnsetCells {
+    let mut cells: Vec<Cell> = Vec::new();
+
+    let mut column_pos = column;
+    let mut row_pos = row;
+    let mut set = false;
+    while !set && row_pos > 0 {
+      while !set && column_pos > 0 {
+        cells = self.sub_grids[row_pos - 1][column_pos - 1].unset_cells(total_unset_options);
+        set = cells.len() > 0;
+        if !set {
+          column_pos -= 1;
+        }
+      }
+
+      if !set {
+        row_pos -= 1;
+        if row_pos > 0 {
+          column_pos = self.dimensions.columns;
         }
       }
     }
 
-    return !valid; // Option removed?
+    // println!("{} {} {:?}", column_pos, row_pos, cells);
+
+    UnsetCells { column: column_pos, row: row_pos, cells }
   }
 
-  fn unset_cells(
-    column: usize,
-    row: usize,
-    totalUnsetOptions: usize
-  ): IUnsetCells {
-    let cells: ICell[] = [];
-    let set = false;
-    while (!set && row >= 0) {
-      while (!set && column >= 0) {
-        cells = self.sub_grids[row][column].unset_cells(totalUnsetOptions);
-        if (!(set = cells.len() > 0)) {
-          column--;
-        }
-      }
-
-      if (!set && row--) {
-        column = self.dimensions.columns - 1;
-      }
-    }
-
-    return { column: column, row: row, cells: cells };
-  }
-*/
   pub fn strike_out(
     &mut self,
     sub_grid_column: usize,

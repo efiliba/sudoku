@@ -97,6 +97,14 @@ impl<'a> SubGrid<'a> {
     options_row
   }
 
+  pub fn set_options(&mut self, options: &Vec<u64>) {
+    for row in 0..self.dimensions.rows {
+      for column in 0..self.dimensions.columns {
+        self.cells[row][column].set_options(options[row * self.dimensions.columns + column]);
+      }
+    }
+  }
+
   pub fn set_by_position(
     &mut self,
     column: usize,
@@ -266,11 +274,12 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn unset_cells(&self, total_unset_options: usize) -> Vec<Cell> {
-    let mut cells = self.get_unset_cells();
+    let cells = self.get_unset_cells();
     let mut unset = Vec::new();
+
     for index in 0..cells.len() {
       if cells[index].total_options_remaining == total_unset_options {
-        // unset.push(cells[index]);
+        unset.push(cells[index]);
       }
     }
 

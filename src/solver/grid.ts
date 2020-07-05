@@ -158,7 +158,7 @@ export class Grid implements IGrid {
 	
 		do {                                                            // Repeat while an only option found or an option removed
 			while (this.simplify())
-					;
+				;
 		} while (this.totalSet > eliminateAfter && maxRecursionLevel > 0 && this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel));
 
 		return this.solved();// totalSet === columns * rows * columns * rows;
@@ -365,29 +365,29 @@ export class Grid implements IGrid {
 	}
 
 	private eliminate(unsetOptionsDepth: number, recursionLevel: number): boolean {
-		let cells: ICell[] = this.save();                           		// Save current state
-		let saveTotalSet: number = this.totalSet;
+		let cells = this.save();                           							// Save current state
+		let saveTotalSet = this.totalSet;
 
-		let valid: boolean = true;
-		let totalUnsetOptions: number = 1;
+		let valid = true;
+		let totalUnsetOptions = 1;
 		while (valid && ++totalUnsetOptions < unsetOptionsDepth) {
-			let row: number = Grid.rows;
+			let row = Grid.rows;
 			while (valid && row-- > 0) {
 				let column = Grid.columns;
 				while (valid && column-- > 0) {
-					let unsetCells: IUnsetCells = this.unsetCells(column, row, totalUnsetOptions);	// May reduce column and row indices
+					let unsetCells = this.unsetCells(column, row, totalUnsetOptions);	// May reduce column and row indices
 					column = unsetCells.column;
 					row = unsetCells.row;
 
-					let index: number = unsetCells.cells.length;
-					while (valid && index--) {
-						let cell: ICell = unsetCells.cells[index];
+					let index = unsetCells.cells.length;
+					while (valid && index-- > 0) {
+						let cell = unsetCells.cells[index];
 
-						let options: number = cell.options;
-						let cellColumn: number = cell.getColumn();
-						const cellRow: number = cell.getRow();
+						let options = cell.options;
+						let cellColumn = cell.getColumn();
+						const cellRow = cell.getRow();
 
-						let tryOption: number = options & ~(options - 1);				// lowest set bit value
+						let tryOption = options & ~(options - 1);								// lowest set bit value
 						while (tryOption && valid) {
 							this.setByOption(column, row, cellColumn, cellRow, tryOption, SetMethod.calculated);
 							this.solve({eliminateAfter: unsetOptionsDepth, maxRecursionLevel: recursionLevel - 1});
@@ -421,12 +421,12 @@ export class Grid implements IGrid {
 				}
 			}
 
-			if (!set && row--) {
+			if (!set && row-- > 0) {
 				column = Grid.columns - 1;
 			}
 		}
 
-		return { column: column, row: row, cells: cells };
+		return { column, row, cells };
 	}
 
 	public strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number) {

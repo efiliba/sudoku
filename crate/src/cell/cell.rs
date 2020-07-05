@@ -2,7 +2,7 @@ use std::fmt::{self, Display};
 use crate::cell::{dimensions::Dimensions, json_cell::JsonCell, SetMethod, SYMBOLS};
 use crate::utils::bit_utils::{highest_bit_position, number_of_bits_set, power_of_2_bit_positions};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Cell<'a> {
   dimensions: &'a Dimensions,
 
@@ -78,6 +78,12 @@ impl<'a> Cell<'a> {
     //   }
     //   this.json.rows.push({ columns: columns });
     // }
+  }
+
+  pub fn set_options(&mut self, options: u64) {
+    self.options = options;
+
+    // May need to set total_options_remaining
   }
 
   pub fn equal(&self, cell: &Cell) -> bool {

@@ -415,68 +415,54 @@ impl<'a> Grid<'a> {
     let save = self.available_options_rows();                       // Save current state
     let save_total_set = self.total_set;
   
-    // println!("*** 1: {:?}", save);
-
-
     let mut valid = true;
-    let mut total_unset_options = 1;
-    while valid {
+    let mut total_unset_options = 2;
+    while valid && total_unset_options <= self.dimensions.total {
       let mut row_pos = self.dimensions.rows;
-
       while valid && row_pos > 0 {
-      // while (valid && row_pos-- > 0) {   // MAY be set bellow 0
-        
-        // Could use pos instead of index ???
-        println!("*** row_pos: {}", row_pos);
-
-        // row_pos -= 1;
         let mut column_pos = self.dimensions.columns;
         while valid && column_pos > 0 {
-
-          println!("***** column_pos: {}", column_pos);
-
-          // column_pos -= 1;
-  //         let unset_cells: IUnsetCells = self.unset_cells(
-          let unset_cells = self.unset_cells(column_pos, row_pos, total_unset_options); // May reduce column and row indices
-          column_pos = unset_cells.column; // MAY need to +1
-          row_pos = unset_cells.row;
+          let unset_cells = self.unset_cells(column_pos, row_pos, total_unset_options);
+          //                ---- first mutable borrow occurs here
+          
+          // column_pos = unset_cells.column + 1;
+          // row_pos = unset_cells.row + 1;
 
           let mut index = unset_cells.cells.len();
           while valid && index > 0 {
-
-            println!("******* index: {}", index);
-
             index -= 1;
-            let cell = unset_cells.cells[index];
+            
+            // let cell = unset_cells.cells[index].clone();
+            //         ----------------- first borrow later used here
 
-            let mut options = cell.options;
-            let cell_column = cell.column;
-            let cell_row = cell.row;
+            let mut options = 27;//cell.options;
+            let cell_column = 1;//cell.column;
+            let cell_row = 1;//cell.row;
 
-            // println!("+++++++++ {} {} {}", options, cell_column, cell_row);
-
-            let mut try_option = options & !(options - 1); // lowest set bit value
+            let mut try_option = options & !(options - 1);          // lowest set bit value
             while try_option > 0 && valid {
-              // self.set_by_option(
-              //   column_pos - 1,
-              //   row_pos - 1,
-              //   cell_column,
-              //   cell_row,
-              //   try_option,
-              //   SetMethod::Calculated
-              // );
-              // self.solve();
-              // valid = self.is_valid();
+              self.set_by_option(
+                column_pos - 1,
+                row_pos - 1,
+                cell_column,
+                cell_row,
+                try_option,
+                SetMethod::Calculated
+              );
+              self.solve();
+              valid = self.is_valid();
 
-              // self.set_options(&save);                              // Reset
-              // self.total_set = save_total_set;
+              self.set_options(&save);                              // Reset
+//            ^^^^ second mutable borrow occurs here
+
+              self.total_set = save_total_set;
 
               if valid {
                 options -= try_option;                              // remove tried option
                 try_option = options & !(options - 1);
               } else {
-                 // Remove try_option i.e. resulted in an invalid state
-                // self.remove_option(column_pos - 1, row_pos - 1, cell_column, cell_row, try_option);
+                // Remove try_option i.e. resulted in an invalid state
+                self.remove_option(column_pos - 1, row_pos - 1, cell_column, cell_row, try_option);
               }
             }
           }
@@ -486,50 +472,38 @@ impl<'a> Grid<'a> {
 
         row_pos -= 1;
       }
-      valid = false;
+
+      total_unset_options += 1;
     }
 
 
-  //   return !valid; // Option removed?
-  // }
-
-
-    println!("2: {:?}", self.to_options());
-
-    // Load without solving / simplifying
-    // use set_by_option_shallow ???
-
-    // [48, 4, 56, 49, 57, 2, 1, 58, 42, 24, 56, 4, 8, 51, 48, 35, 35, 4, 4, 35, 35, 10, 43, 16, 4, 26, 24, 50, 58, 1, 32, 27, 11, 26, 4, 10]
-    
-    false
+    !valid                                                          // Option removed?
   }
 
-  fn unset_cells(&mut self, column: usize, row: usize, total_unset_options: usize) -> UnsetCells {
+  fn unset_cells(&self, column_pos: usize, row_pos: usize, total_unset_options: usize) -> UnsetCells {
     let mut cells: Vec<Cell> = Vec::new();
 
-    let mut column_pos = column;
-    let mut row_pos = row;
+    let mut column = column_pos;
+    let mut row = row_pos;
     let mut set = false;
-    while !set && row_pos > 0 {
-      while !set && column_pos > 0 {
-        cells = self.sub_grids[row_pos - 1][column_pos - 1].unset_cells(total_unset_options);
+    while !set && row > 0 {
+      while !set && column > 0 {
+        cells = self.sub_grids[row - 1][column - 1].unset_cells(total_unset_options);
         set = cells.len() > 0;
         if !set {
-          column_pos -= 1;
+          column -= 1;
         }
       }
 
       if !set {
-        row_pos -= 1;
-        if row_pos > 0 {
-          column_pos = self.dimensions.columns;
+        row -= 1;
+        if row > 0 {
+          column = self.dimensions.columns;
         }
       }
     }
 
-    // println!("{} {} {:?}", column_pos, row_pos, cells);
-
-    UnsetCells { column: column_pos, row: row_pos, cells }
+    UnsetCells { column_pos: column, row_pos: row, cells }
   }
 
   pub fn strike_out(

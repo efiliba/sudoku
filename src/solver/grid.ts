@@ -375,7 +375,7 @@ export class Grid implements IGrid {
 			while (valid && row-- > 0) {
 				let column = Grid.columns;
 				while (valid && column-- > 0) {
-					let unsetCells = this.unsetCells(column, row, totalUnsetOptions);	// May reduce column and row indices
+					let unsetCells = this.unsetCells(column, row, totalUnsetOptions);	// MUTATION - May reduce column and row indices
 					column = unsetCells.column;
 					row = unsetCells.row;
 

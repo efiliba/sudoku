@@ -266,11 +266,12 @@ impl<'a> SubGrid<'a> {
     for row in 0..self.dimensions.rows {
       for column in 0..self.dimensions.columns {
         if self.cells[row][column].set_method == SetMethod::Unset {
-          // unset_cells.push(new Cell(this.cells[row][column])); // Set copy of cell
+          unset_cells.push(self.cells[row][column]);                // Set copy of cell
         }
       }
     }
-    return unset_cells;
+
+    unset_cells
   }
 
   pub fn unset_cells(&self, total_unset_options: usize) -> Vec<Cell> {

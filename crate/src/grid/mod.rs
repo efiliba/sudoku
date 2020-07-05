@@ -12,8 +12,8 @@ pub struct LimitedBitOption {                                       // Options l
 }
 
 pub struct UnsetCells<'a> {
-  pub column: usize,
-  pub row: usize,
+  pub column_pos: usize,
+  pub row_pos: usize,
   pub cells: Vec<Cell<'a>>
 }
 

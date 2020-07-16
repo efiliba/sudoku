@@ -6,7 +6,7 @@ pub mod sub_grid;
 pub mod grid;
 
 use grid::grid::Grid;
-use cell::{dimensions::Dimensions, SetMethod};
+use cell::{dimensions::Dimensions};
 
 #[wasm_bindgen]
 pub fn solve(columns: usize, rows: usize, input: Vec<usize>) -> Vec<usize> {

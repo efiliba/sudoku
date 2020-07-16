@@ -180,7 +180,10 @@ export class Cell implements ICell {
 	}
 
 	public removeOption(option: number): boolean {                   	// Return if last option left after removing this option
-		let lastOptionFound: boolean = false;
+		let lastOptionFound = false;
+		// debugger
+
+		console.log!(`=====>>> (${this.column}, ${this.row}) (${this.setColumn}, ${this.setRow}) ${this.options} ${option} ${this.totalOptionsRemaining}`);
 
 		if (this.options & option && this.totalOptionsRemaining > 1) { 	// Check if option to remove exists and not last option
 			this.options &= ~option;

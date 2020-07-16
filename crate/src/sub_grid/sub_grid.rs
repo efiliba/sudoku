@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, SYMBOLS};
+use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod};
 use crate::sub_grid::{BitOption, StruckOutCells};
 
 #[derive(Debug)]
@@ -285,6 +285,19 @@ impl<'a> SubGrid<'a> {
     }
 
     unset
+  }
+
+  pub fn unset_cells_options(&self, total_unset_options: usize) -> Vec<u64> {
+    let cells = self.get_unset_cells();
+    let mut unset_options = Vec::new();
+
+    for index in 0..cells.len() {
+      if cells[index].total_options_remaining == total_unset_options {
+        unset_options.push(cells[index].options);
+      }
+    }
+
+    unset_options
   }
 
   pub fn get_available_options(&self) -> Vec<u64> {
@@ -709,9 +722,9 @@ impl<'a> SubGrid<'a> {
     !option_found                                                   // If option not found then it was removed from self sub grid's row
   }
 
-  pub fn set_cells(&self, sub_grid: Vec<Vec<Cell>>) {
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+  pub fn set_cells(&self, _sub_grid: Vec<Vec<Cell>>) {
+    for _row in 0..self.dimensions.rows {
+      for _column in 0..self.dimensions.columns {
         // self.cells[row][column] = Cell::new(sub_grid[row][column]); -> set using copy letructor ?
       }
     }

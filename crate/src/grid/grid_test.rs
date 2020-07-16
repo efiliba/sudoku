@@ -1,6 +1,5 @@
 #[cfg(test)]
 use crate::cell::dimensions::Dimensions;
-use crate::sub_grid::sub_grid::SubGrid;
 
 #[cfg(test)]
 fn init_sub_grids(dimensions: &Dimensions) -> Vec<Vec<SubGrid>> {

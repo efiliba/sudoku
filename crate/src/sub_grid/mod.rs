@@ -1,5 +1,3 @@
-use crate::cell::json_cell::JsonCell;
-
 pub mod sub_grid;
 
 mod sub_grid_test;
@@ -17,13 +15,4 @@ pub struct StruckOutCells {
   pub last_options_found: Vec<BitOption>,
   pub removed_options_from_column: Vec<BitOption>,
   pub removed_options_from_row: Vec<BitOption>
-}
-
-
-pub struct JsonSubGridRow {
-  columns: Vec<JsonCell>
-}
-
-pub struct JsonSubGrid {
-  rows: Vec<JsonSubGridRow>
 }

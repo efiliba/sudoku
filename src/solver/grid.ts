@@ -122,12 +122,12 @@ export class Grid implements IGrid {
 
 	private strikeOutFromSetCells() {
 		this.totalSet = 0;
-		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
-			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				const subGrid: ISubGrid = this.subGrids[subGridRow][subGridColumn];
-				for (let cellRow: number = 0; cellRow < Grid.columns; cellRow++) {
-					for (let cellColumn: number = 0; cellColumn < Grid.rows; cellColumn++) {
-						const cell: ICell = subGrid.get(cellColumn, cellRow);
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				const subGrid = this.subGrids[subGridRow][subGridColumn];
+				for (let cellRow = 0; cellRow < Grid.columns; cellRow++) {
+					for (let cellColumn = 0; cellColumn < Grid.rows; cellColumn++) {
+						const cell = subGrid.get(cellColumn, cellRow);
 						if (cell.setMethod) {                                		// cell set i.e. != SetMethod.unset
 							this.totalSet++;
 							this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, cell.options);
@@ -155,11 +155,13 @@ export class Grid implements IGrid {
 		if (restart) {
 			this.strikeOutFromSetCells();
 		}
-	
-		do {                                                            // Repeat while an only option found or an option removed
-			while (this.simplify())
-				;
-		} while (this.totalSet > eliminateAfter && maxRecursionLevel > 0 && this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel));
+		this.simplify()
+		this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel)
+		this.debug()
+		// do {                                                            // Repeat while an only option found or an option removed
+		// 	while (this.simplify())
+		// 		;
+		// } while (this.totalSet > eliminateAfter && maxRecursionLevel > 0 && this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel));
 
 		return this.solved();// totalSet === columns * rows * columns * rows;
 	}
@@ -191,6 +193,7 @@ export class Grid implements IGrid {
 
 	public removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): boolean {
 		let cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
+		debugger
 		if (cell.removeOption(option)) {                     						// Check if last option left
 			this.totalSet++;
 			this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, cell.options);	// Remaining option
@@ -376,12 +379,12 @@ export class Grid implements IGrid {
 				let column = Grid.columns;
 				while (valid && column-- > 0) {
 					let unsetCells = this.unsetCells(column, row, totalUnsetOptions);	// MUTATION - May reduce column and row indices
-					column = unsetCells.column;
-					row = unsetCells.row;
+					// column = unsetCells.column;
+					// row = unsetCells.row;
 
-					let index = unsetCells.cells.length;
+					let index = unsetCells.length;
 					while (valid && index-- > 0) {
-						let cell = unsetCells.cells[index];
+						let cell = unsetCells[index];
 
 						let options = cell.options;
 						let cellColumn = cell.getColumn();
@@ -410,9 +413,10 @@ export class Grid implements IGrid {
 		return !valid;                                                  // Option removed?
 	}
 
-	private unsetCells(column: number, row: number, totalUnsetOptions: number): IUnsetCells {
+	private unsetCells(column: number, row: number, totalUnsetOptions: number): ICell[] {
 		let cells: ICell[] = [];
 		let set = false;
+		// debugger
 		while (!set && row >= 0) {
 			while (!set && column >= 0) {
 				cells = this.subGrids[row][column].unsetCells(totalUnsetOptions);
@@ -426,15 +430,15 @@ export class Grid implements IGrid {
 			}
 		}
 
-		return { column, row, cells };
+		return cells;
 	}
 
 	public strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number) {
-		let struckOutCells: IStruckOutCells = this.subGrids[subGridRow][subGridColumn].strikeOutCell(cellColumn, cellRow, option);
+		let struckOutCells = this.subGrids[subGridRow][subGridColumn].strikeOutCell(cellColumn, cellRow, option);
 
 		let removeOption: IOption;
 
-		let index: number = struckOutCells.removedOptionsFromColumn.length; // Distinct
+		let index = struckOutCells.removedOptionsFromColumn.length; 		// Distinct
 		while (index--) {  
 			removeOption = struckOutCells.removedOptionsFromColumn[index];
 			this.join(struckOutCells.lastOptionsFound, this.removeOptionFromOtherColumns(removeOption.subGridColumn, removeOption.subGridRow, removeOption.cellColumn, removeOption.bits));

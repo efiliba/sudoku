@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-use crate::cell::{dimensions::Dimensions, json_cell::JsonCell, SetMethod, SYMBOLS};
+use crate::cell::{dimensions::Dimensions, SetMethod, SYMBOLS};
 use crate::utils::bit_utils::{highest_bit_position, number_of_bits_set, power_of_2_bit_positions};
 
 #[derive(Debug, Copy, Clone)]
@@ -9,7 +9,6 @@ pub struct Cell<'a> {
   pub column: usize,
   pub row: usize,
   pub options: u64,
-  // pub json: JsonCell,
   pub total_options_remaining: usize,
 
   pub set_method: SetMethod,
@@ -27,25 +26,6 @@ impl Display for Cell<'_> {
   }
 }
 
-pub enum Cell2 {
-  OptionsCell { column: usize, row: usize },
-  SetCell { symbol: char },
-}
-
-impl Cell2 {
-  pub fn new(column: usize, row: usize) -> Self {
-    Cell2::OptionsCell { column, row }
-  }
-
-  // pub fn new(symbol: char) -> Self {
-  //   Cell2::SetCell { symbol }
-  // }
-
-  pub fn change(&mut self) {
-    *self = Cell2::SetCell { symbol: 'a' };
-  }
-}
-
 impl<'a> Cell<'a> {
   pub fn new(dimensions: &'a Dimensions, column: usize, row: usize) -> Self {
     Cell {
@@ -53,7 +33,6 @@ impl<'a> Cell<'a> {
       column,
       row,
       options: (1 << dimensions.total) - 1, // Set all bits
-      // json: JsonCell::new(dimensions),
       total_options_remaining: dimensions.total,
       set_method: SetMethod::Unset,
       set_column: 0,
@@ -69,15 +48,6 @@ impl<'a> Cell<'a> {
     self.total_options_remaining = self.dimensions.total;
     self.options = (1 << self.dimensions.total) - 1; // Set all bits
 
-    // self.json = JsonCell::new(COLUMNS, ROWS);
-    // this.json = { rows: [] };                                        // Set JSON representation to all options available
-    // for (let row: number = 0, index: number = 0; row < Cell.rows; row++) {
-    //   const columns: IJsonCellColumn[] = [];
-    //   for (let column = 0; column < Cell.columns; column++) {
-    //     columns.push({ symbol: Cell.symbols[index++] });
-    //   }
-    //   this.json.rows.push({ columns: columns });
-    // }
   }
 
   pub fn set_options(&mut self, options: u64) {
@@ -95,46 +65,6 @@ impl<'a> Cell<'a> {
   pub fn solved(&self) -> bool {
     self.total_options_remaining == 1
   }
-
-  //   constructor(pub fn column: any, pub fn row?: number) {
-  //     if (typeof column === "number") {
-  //       this.reset();
-  //     } else {                                                         // Copy constructor
-  //       const copy: Cell = column;
-  //       this.column = copy.column;
-  //       this.row = copy.row;
-  //       this.setMethod = copy.setMethod;
-
-  //       this.options = copy.options;
-  //       this.setColumn = copy.setColumn;
-  //       this.setRow = copy.setRow;
-  //       this.totalOptionsRemaining = copy.totalOptionsRemaining;
-
-  //       this.json = copy.json;
-
-  //       if (copy.json.rows) {
-  //         this.json = { rows: [] };
-  //         for (let row: number = 0; row < copy.json.rows.length; row++) {
-  //           this.json.rows[row] = { columns: [] };
-  //           const jsonColumns: IJsonCellColumn[] = copy.json.rows[row].columns;
-  //           for (let column = 0; column < jsonColumns.length; column++) {
-  //             this.json.rows[row].columns[column] = { symbol: jsonColumns[column].symbol };
-  //             if (jsonColumns[column].strikeOut) {
-  //               this.json.rows[row].columns[column].strikeOut = jsonColumns[column].strikeOut;
-  //             }
-  //           }
-  //         }
-  //       } else {
-  //         this.json = { symbol: copy.json.symbol, setMethod: copy.json.setMethod };
-  //       }
-  //     }
-  //   }
-
-  //   pub fn equal(cell: Cell): bool {
-  //     return (this.setColumn === cell.setColumn || cell.setColumn === -1) &&
-  //       (this.setRow === cell.setRow || cell.setRow === -1) && this.options === cell.options;
-  //     //return this.options === cell.options;
-  //   }
 
   pub fn symbol(&self) -> char {
     SYMBOLS[self.set_row * self.dimensions.columns + self.set_column]
@@ -176,21 +106,22 @@ impl<'a> Cell<'a> {
     // Return if last option left after removing this option
     let mut last_option_found = false;
 
+    // println!("=====>>> ({}, {}) ({}, {}) {} {} {}", self.column, self.row, self.set_column, self.set_row, self.options, option, self.total_options_remaining);
+ 
+    // column: 2, row: 1, options: 10, total_options_remaining: 1, set_method: Calculated, set_column: 1, set_row: 0 }
+
     if self.options & option > 0 && self.total_options_remaining > 1 {
       // Check if option to remove exists and not last option
       self.options &= !option;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
         self.set_remaining_option(self.options); // Set last remaining option's column and row
-                                                 //         this.json = { symbol: Cell.symbols[powerOf2BitPositions[this.options]] };
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
-        //       }
-        //       else {
-        //         const index: number = powerOf2BitPositions[option];
-        //         this.json.rows[index / Cell.columns >> 0].columns[index % Cell.columns].strikeOut = true;
       }
     }
+
+    // println!("{:?}", self);
 
     last_option_found
   }
@@ -266,15 +197,8 @@ impl<'a> Cell<'a> {
     self.set_row = index / self.dimensions.columns >> 0;
   }
 
-  //   // private clearAllExcept(option: number, fix: bool) {
-  //   //   this.options = option;
-  //   //   this.json = { symbol: Cell.symbols[powerOf2BitPositions[option]], fixed: fix };
-  //   //   this.totalOptionsRemaining = 1;
-  //   // }
-
-  fn clear_all_except_at_position(&mut self, column: usize, row: usize, set_method: SetMethod) {
+  fn clear_all_except_at_position(&mut self, column: usize, row: usize, _set_method: SetMethod) {
     self.options = 1 << self.dimensions.columns * row + column;
-    // this.json = { symbol: Cell.symbols[powerOf2BitPositions[this.options]], setMethod };
     self.total_options_remaining = 1;
   }
 

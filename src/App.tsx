@@ -8,6 +8,18 @@ const rows = 3;
 solver.Grid.Constructor(columns, rows);
 const grid = new solver.Grid();
 
+const test2x2 = [
+  1, 0, 0, 0,
+  0, 2, 0, 0,
+  0, 0, 3, 0,
+  0, 0, 0, 4
+];
+
+const test2x1 = [
+  1, 0,
+  0, 0
+];
+
 const hard2x3 = [
   0, 0, 0, 1, 0, 0,  
   0, 0, 2, 0, 0, 3,  

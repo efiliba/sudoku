@@ -359,7 +359,7 @@ export class SubGrid implements ISubGrid {
 			}
 		}
 
-		return { lastOptionsFound: lastOptions, removedOptionsFromColumn: removedOptionsFromColumn, removedOptionsFromRow: removedOptionsFromRow };
+		return { lastOptionsFound: lastOptions, removedOptionsFromColumn, removedOptionsFromRow };
 	}
 
 	public isStruckOut(cellColumn: number, cellRow: number, symbol: string): boolean {

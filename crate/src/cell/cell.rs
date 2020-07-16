@@ -47,13 +47,10 @@ impl<'a> Cell<'a> {
     self.set_method = SetMethod::Unset;
     self.total_options_remaining = self.dimensions.total;
     self.options = (1 << self.dimensions.total) - 1; // Set all bits
-
   }
 
   pub fn set_options(&mut self, options: u64) {
     self.options = options;
-
-    // May need to set total_options_remaining
   }
 
   pub fn equal(&self, cell: &Cell) -> bool {
@@ -81,26 +78,13 @@ impl<'a> Cell<'a> {
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
         self.set_remaining_option(self.options); // Set last remaining option's column and row
-                                                 //     this.json = { symbol: Cell.symbols[powerOf2BitPositions[this.options]] };
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
-        //   } else {
-        //     this.json.rows[row].columns[column].strikeOut = true;       // Only set strikeOut to true if option removed - else leave empty
       }
     }
 
     last_option_found
   }
-
-  //   pub fn toggleRemoveOptionAtPositionShallow(column: number, row: number): void {
-  //     const cell = this.json.rows[row].columns[column];
-  //     cell.strikeOut = !cell.strikeOut;
-  //   }
-
-  //   pub fn toggleHighlightOptionAtPosition(column: number, row: number): void {
-  //     const cell = this.json.rows[row].columns[column];
-  //     cell.highlight = !cell.highlight;
-  //   }
 
   pub fn remove_option(&mut self, option: u64) -> bool {
     // Return if last option left after removing this option
@@ -137,13 +121,11 @@ impl<'a> Cell<'a> {
 
       if self.total_options_remaining == 1 {
         self.set_remaining_option(self.options); // Set last remaining option's column and row
-        // self.json = { symbol: Cell.symbols[powerOf2BitPositions[self.options]] };
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       } else {
         while remove_options > 0 {
           let highest_bit_pos = highest_bit_position(remove_options);
-          // self.json.rows[highest_bit_pos / Cell.columns >> 0].columns[highest_bit_pos % Cell.columns].strikeOut = true;
           remove_options -= 1 << highest_bit_pos;
         }
       }
@@ -221,26 +203,6 @@ impl<'a> Cell<'a> {
   //     return this.totalOptionsRemaining > 1 && (this.options & ~options) > 0 && this.removeOptions(options);
   //   }
 
-  //   pub fn setJson(json: IJsonCell) {
-  //     if (json.rows) {
-  //       this.options = 0;
-  //       this.totalOptionsRemaining = 0;
-  //       for (let row: number = 0, option: number = 1; row < json.rows.length; row++) {
-  //         const columns: IJsonCellColumn[] = json.rows[row].columns;
-  //         for (let column = 0; column < columns.length; column++, option <<= 1) {
-  //           if (!columns[column].strikeOut) {
-  //             this.options += option;
-  //             this.totalOptionsRemaining++;
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       this.setBySymbol(json.symbol, json.setMethod);
-  //     }
-
-  //     this.json = json;
-  //   }
-  // }
 }
 
 fn find_symbol_index(symbol: char) -> usize {

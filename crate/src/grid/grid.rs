@@ -197,19 +197,31 @@ impl<'a> Grid<'a> {
     option: u64
   ) -> bool {
     let mut cell = *self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
-    println!("remove_option 2 from 10, but total_options_remaining is 1   {:?}", cell);
+    // println!("remove_option 2 from 10, but total_options_remaining is 1 {:?}", cell);
 
     // {column: 2, row: 1, setMethod: null, options: 10, setColumn: -1, setRow: -1, totalOptionsRemaining: 2}
     if cell.remove_option(option) {
       // Check if last option left
 
-    //   self.strike_out(
-    //     sub_grid_column,
-    //     sub_grid_row,
-    //     cell_column,
-    //     cell_row,
-    //     cell.options
-    //   ); // Remaining option
+      println!("before: {:#}", self);
+      println!("{} {} {} {} {}",
+        sub_grid_column,
+        sub_grid_row,
+        cell_column,
+        cell_row,
+        cell.options
+      );
+
+      self.strike_out(
+        sub_grid_column,
+        sub_grid_row,
+        cell_column,
+        cell_row,
+        cell.options
+      );
+
+      println!("after: {:#}", self);
+
       return true;
     }
 
@@ -227,18 +239,6 @@ impl<'a> Grid<'a> {
 
     only_option_found
   }
-  
-  // pub fn load(&mut self, input: &Vec<u64>) {
-  //   let grouped = array_utils::group_by_root(input);
-  //   let transposed = array_utils::transpose_rows(self.dimensions.columns, &grouped);
-
-  //   let mut sub_group_iter = transposed.iter();
-  //   for row in 0..self.dimensions.rows {
-  //     for column in 0..self.dimensions.columns {
-  //       self.sub_grids[row][column].load(sub_group_iter.next().unwrap());
-  //     }
-  //   }
-  // }
 
   pub fn load_set_options(&mut self, options: &Vec<u64>) {
     let grouped = array_utils::group_by_root(options);
@@ -258,31 +258,6 @@ impl<'a> Grid<'a> {
     }
   }
 
-/*
-  public debug(log: bool = true): DebugSubGridType[][] {
-    const rows: DebugSubGridType[][] = [];
-
-    let row: usize = self.dimensions.rows;
-    while (row--) {
-      let column: usize = self.dimensions.columns;
-      const subGridsRow: DebugSubGridType[] = [];
-      while (column--) {
-        subGridsRow.unshift(self.sub_grids[row][column].debug(false));
-      }
-      rows.unshift(subGridsRow);
-    }
-
-    if (log) {
-      while (++row < self.dimensions.rows) {
-        console.log(rows[row].join(" | "));
-      }
-      console.log(Array(rows[0].len() + 1).join("---"));
-    }
-
-    return rows;
-  }
-*/
-
   fn is_valid(&self) -> bool {
     // let valid =
     //   self.matrixValid(self.get_transposed_cells_matrix()) &&
@@ -292,118 +267,6 @@ impl<'a> Grid<'a> {
 
     false
   }
-
-/*
-  fn matrixValid(matrix: ICell[][]): bool {
-    let valid: bool = true;
-    const size: usize = self.dimensions.columns * self.dimensions.rows;
-    let index: usize = size;
-    while valid && index > 0 {
-      index -= 1;
-      let setOptions: usize[] = self.setDistinctOptions(matrix[index]); // Get unique set cells
-      let unsetOptions: usize[] = self.unsetOptions(matrix[index]);
-
-      valid =
-        setOptions.len() + unsetOptions.len() === size && // Ensures setOptions did not contain duplicates
-        (bitwise_or(setOptions) | bitwise_or(unsetOptions)) === (1 << size) - 1; // totalSetOptions | totalUnsetOptions must contain all the options
-    }
-
-    return valid;
-  }
-
-  fn setDistinctOptions(cells: ICell[]): usize[] {
-    // cells.Where(x => x.IsSet).GroupBy(x => x.Options).Where(x => x.Count() == 1).Select(x => x.Key);
-    let distinct: usize[] = [];
-    let hash = {};
-    for (let index: usize = 0; index < cells.len(); index++) {
-      let options: usize = cells[index].options;
-      if (cells[index].set_method && !hash[options]) {
-        // cell set i.e. != SetMethod.unset
-        distinct.push(options);
-        hash[options] = true;
-      }
-    }
-
-    return distinct;
-  }
-
-  fn unsetOptions(cells: ICell[]): usize[] {
-    // cells.Where(x => !x.IsSet).Select(x => x.Options)
-    let options: usize[] = [];
-    for (let index: usize = 0; index < cells.len(); index++) {
-      if (!cells[index].set_method) {
-        // cell unset i.e. == SetMethod.unset
-        options.push(cells[index].options);
-      }
-    }
-
-    return options;
-  }
-
-  fn load(cells: ICell[]) {
-    const subGrid: ICell[][] = [];
-    for (let row: usize = 0; row < self.dimensions.columns; row++) {
-      // Use SubGrid's number of rows i.e. swopped columns
-      subGrid[row] = [];
-    }
-    let size: usize = self.dimensions.columns * self.dimensions.rows;
-
-    for (let sub_grid_row: usize = 0; sub_grid_row < self.dimensions.rows; sub_grid_row++) {
-      for (
-        let sub_grid_column: usize = 0;
-        sub_grid_column < self.dimensions.columns;
-        sub_grid_column++
-      ) {
-        for (let cell_row: usize = 0; cell_row < self.dimensions.columns; cell_row++) {
-          for (
-            let cell_column: usize = 0;
-            cell_column < self.dimensions.rows;
-            cell_column++
-          ) {
-            subGrid[cell_row][cell_column] =
-              cells[
-                sub_grid_row * size * self.dimensions.columns +
-                  sub_grid_column * self.dimensions.rows +
-                  cell_row * size +
-                  cell_column
-              ];
-          }
-        }
-
-        self.sub_grids[sub_grid_row][sub_grid_column].setCells(subGrid);
-      }
-    }
-  }
-
-  public save(): ICell[] {
-    let size: usize = self.dimensions.columns * self.dimensions.rows;
-    let cells: ICell[] = [];
-
-    for (let sub_grid_row: usize = 0; sub_grid_row < self.dimensions.rows; sub_grid_row++) {
-      for (
-        let sub_grid_column: usize = 0;
-        sub_grid_column < self.dimensions.columns;
-        sub_grid_column++
-      ) {
-        let sub_matrix = self.sub_grids[sub_grid_row][
-          sub_grid_column
-        ].get_cells_matrix();
-        for (let cell_row = 0; cell_row < self.dimensions.columns; cell_row++) {
-          for (let cell_column = 0; cell_column < self.dimensions.rows; cell_column++) {
-            cells[
-              sub_grid_row * size * self.dimensions.columns +
-                sub_grid_column * self.dimensions.rows +
-                cell_row * size +
-                cell_column
-            ] = sub_matrix[cell_row][cell_column];
-          }
-        }
-      }
-    }
-
-    return cells;
-  }
-*/
 
   fn eliminate(&mut self) -> bool {
     let save = self.get_options_remaining();                       // Save current state

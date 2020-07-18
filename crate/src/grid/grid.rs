@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 use crate::utils::combinations::Combinations;
 use crate::utils::bit_utils::{number_of_bits_set, bitwise_or, only_option, containing_bit_index};
-use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod};
+use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, OptionsRemaining};
 use crate::sub_grid::{sub_grid::SubGrid, BitOption};
 use crate::grid::CellOptions;
 use crate::utils::array_utils;
@@ -87,10 +87,21 @@ impl<'a> Grid<'a> {
     options_rows
   }
 
-  pub fn set_options(&mut self, options: &Vec<Vec<u64>>) {
+  pub fn get_options_remaining(&self) -> Vec<Vec<OptionsRemaining>> {
+    let mut options_remaining = Vec::with_capacity(self.dimensions.total);
     for row in 0..self.dimensions.rows {
       for column in 0..self.dimensions.columns {
-        self.sub_grids[row][column].set_options(&options[row * self.dimensions.columns + column]);
+        options_remaining.push(self.sub_grids[row][column].get_options_remaining());
+      }
+    }
+
+    options_remaining
+  }
+
+  pub fn set_options_remaining(&mut self, options: &Vec<Vec<OptionsRemaining>>) {
+    for row in 0..self.dimensions.rows {
+      for column in 0..self.dimensions.columns {
+        self.sub_grids[row][column].set_options_remaining(&options[row * self.dimensions.columns + column]);
       }
     }
   }
@@ -395,7 +406,7 @@ impl<'a> Grid<'a> {
 */
 
   fn eliminate(&mut self) -> bool {
-    let save = self.available_options_rows();                       // Save current state
+    let save = self.get_options_remaining();                       // Save current state
 
     // println!("{:#}", self);
 
@@ -481,7 +492,7 @@ impl<'a> Grid<'a> {
     cell_column: usize,
     cell_row: usize,
     options: u64,
-    reset_cells: &Vec<Vec<u64>>
+    reset_cells: &Vec<Vec<OptionsRemaining>>
   ) -> bool {
     let mut valid = true;
     let mut remaining_options = options;
@@ -497,7 +508,7 @@ impl<'a> Grid<'a> {
       // println!("try_option valid: {}", valid);
 
       println!("{:#}", self);
-      self.set_options(reset_cells);                                // reset
+      self.set_options_remaining(reset_cells);                      // reset
       println!("{:#}", self);
 
       if valid {

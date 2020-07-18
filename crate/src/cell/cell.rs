@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-use crate::cell::{dimensions::Dimensions, SetMethod, SYMBOLS};
+use crate::cell::{dimensions::Dimensions, SetMethod, SYMBOLS, OptionsRemaining};
 use crate::utils::bit_utils::{highest_bit_position, number_of_bits_set, power_of_2_bit_positions};
 
 #[derive(Debug, Copy, Clone)]
@@ -49,8 +49,9 @@ impl<'a> Cell<'a> {
     self.options = (1 << self.dimensions.total) - 1; // Set all bits
   }
 
-  pub fn set_options(&mut self, options: u64) {
-    self.options = options;
+  pub fn set_options_remaining(&mut self, options_remaining: &OptionsRemaining) {
+    self.options = options_remaining.options;
+    self.total_options_remaining = options_remaining.total_options_remaining;
   }
 
   pub fn equal(&self, cell: &Cell) -> bool {
@@ -65,6 +66,10 @@ impl<'a> Cell<'a> {
 
   pub fn symbol(&self) -> char {
     SYMBOLS[self.set_row * self.dimensions.columns + self.set_column]
+  }
+
+  pub fn get_options_remaining(&self) -> OptionsRemaining {
+    OptionsRemaining { options: self.options, total_options_remaining: self.total_options_remaining }
   }
 
   pub fn remove_option_at_position(&mut self, column: usize, row: usize) -> bool {

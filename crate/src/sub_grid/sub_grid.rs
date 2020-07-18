@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod};
+use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, OptionsRemaining};
 use crate::sub_grid::{BitOption, StruckOutCells};
 
 #[derive(Debug)]
@@ -97,10 +97,22 @@ impl<'a> SubGrid<'a> {
     options_row
   }
 
-  pub fn set_options(&mut self, options: &Vec<u64>) {
+  pub fn get_options_remaining(&self) -> Vec<OptionsRemaining> {
+    let mut options_row = Vec::with_capacity(self.dimensions.total);
+
     for row in 0..self.dimensions.rows {
       for column in 0..self.dimensions.columns {
-        self.cells[row][column].set_options(options[row * self.dimensions.columns + column]);
+        options_row.push(self.cells[row][column].get_options_remaining());
+      }
+    }
+
+    options_row
+  }
+
+  pub fn set_options_remaining(&mut self, options: &Vec<OptionsRemaining>) {
+    for row in 0..self.dimensions.rows {
+      for column in 0..self.dimensions.columns {
+        self.cells[row][column].set_options_remaining(&options[row * self.dimensions.columns + column]);
       }
     }
   }

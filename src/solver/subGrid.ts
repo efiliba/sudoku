@@ -10,6 +10,12 @@ export interface IOption {
 }
 
 // Arrays of last options found and options removed from all columns / rows in the sub grid
+export interface IStruckOutCell {
+	lastOptionFound: IOption;
+	removedOptionFromColumn: IOption;
+	removedOptionFromRow: IOption;
+}
+
 export interface IStruckOutCells {
 	lastOptionsFound: IOption[];
 	removedOptionsFromColumn: IOption[];
@@ -294,72 +300,69 @@ export class SubGrid implements ISubGrid {
 
 	// Remove option from all other cells in this sub grid - return array of last options found and options removed from all columns / rows in the sub grid
 	public strikeOutCell(cellColumn: number, cellRow: number, option: number): IStruckOutCells {
-		const lastOptions: IOption[] = [];
-		const removedOptionsFromColumn: IOption[] = [];
-		const removedOptionsFromRow: IOption[] = [];
+		const struckOutCells: IStruckOutCells = {
+			lastOptionsFound: [],
+			removedOptionsFromColumn: [],
+			removedOptionsFromRow: [],
+		};
 
 		let column: number;
 		let row = SubGrid.rows;
 		while (--row > cellRow) {
 			column = SubGrid.columns;
 			while (column-- > 0) {
-				if (this.cells[row][column].removeOption(option)) {
-					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
-				} else {
-					if (this.optionRemovedFromColumn(column, row, option)) {
-							removedOptionsFromColumn.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option });
-					}
-					if (this.optionRemovedFromRow(column, row, option)) {
-							removedOptionsFromRow.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: row, bits: option });
-					}
-				}
+				this.addToStruckOutCells(struckOutCells, this.getStruckOutCell(column, row, option));
 			}
 		}
 
 		column = SubGrid.columns;
 		while (--column > cellColumn) {
-			if (this.cells[row][column].removeOption(option)) {
-				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
-			}	else {
-				if (this.optionRemovedFromColumn(column, row, option)) {
-					removedOptionsFromColumn.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option });
-				}
-				if (this.optionRemovedFromRow(column, row, option)) {
-					removedOptionsFromRow.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: row, bits: option });
-				}
-			}
+			this.addToStruckOutCells(struckOutCells, this.getStruckOutCell(column, row, option));
 		}
 
 		while (column-- > 0) {
-			if (this.cells[row][column].removeOption(option)) {
-				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
-			} else {
-				if (this.optionRemovedFromColumn(column, row, option)) {
-						removedOptionsFromColumn.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option });
-				}
-				if (this.optionRemovedFromRow(column, row, option)) {
-						removedOptionsFromRow.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: -1, bits: option });
-				}
-			}
+			this.addToStruckOutCells(struckOutCells, this.getStruckOutCell(column, row, option));
 		}
 		
 		while (row-- > 0) {
 			column = SubGrid.columns;
 			while (column-- > 0) {
-				if (this.cells[row][column].removeOption(option)) {
-						lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
-				} else {
-					if (this.optionRemovedFromColumn(column, row, option)) {
-						removedOptionsFromColumn.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option });
-					}
-					if (this.optionRemovedFromRow(column, row, option)) {
-						removedOptionsFromRow.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: row, bits: option });
-					}
-				}
+				this.addToStruckOutCells(struckOutCells, this.getStruckOutCell(column, row, option));
 			}
 		}
 
-		return { lastOptionsFound: lastOptions, removedOptionsFromColumn, removedOptionsFromRow };
+		return struckOutCells;
+	}
+
+	private getStruckOutCell(column: number, row: number, option: number): IStruckOutCell {
+		let lastOptionFound: IOption;
+		let removedOptionFromColumn: IOption;
+		let removedOptionFromRow: IOption;
+
+		if (this.cells[row][column].removeOption(option)) {
+			lastOptionFound = { subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options };
+		} else {
+			if (this.optionRemovedFromColumn(column, row, option)) {
+				removedOptionFromColumn = { subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option };
+			}
+			if (this.optionRemovedFromRow(column, row, option)) {
+				removedOptionFromRow = { subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: row, bits: option };
+			}
+		}
+
+		return {lastOptionFound, removedOptionFromColumn, removedOptionFromRow};
+	}
+
+	private addToStruckOutCells(struckOutCells: IStruckOutCells, struckOutCell: IStruckOutCell) {
+		if (struckOutCell.lastOptionFound) {
+			struckOutCells.lastOptionsFound.push(struckOutCell.lastOptionFound);
+		}
+		if (struckOutCell.removedOptionFromColumn) {
+			struckOutCells.removedOptionsFromColumn.push(struckOutCell.removedOptionFromColumn);
+		}
+		if (struckOutCell.removedOptionFromRow) {
+			struckOutCells.removedOptionsFromRow.push(struckOutCell.removedOptionFromRow);
+		}
 	}
 
 	public isStruckOut(cellColumn: number, cellRow: number, symbol: string): boolean {

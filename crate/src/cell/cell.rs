@@ -82,7 +82,7 @@ impl<'a> Cell<'a> {
       self.options &= !bit;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
-        self.set_remaining_option(self.options); // Set last remaining option's column and row
+        self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       }
@@ -95,22 +95,16 @@ impl<'a> Cell<'a> {
     // Return if last option left after removing this option
     let mut last_option_found = false;
 
-    // println!("=====>>> ({}, {}) ({}, {}) {} {} {}", self.column, self.row, self.set_column, self.set_row, self.options, option, self.total_options_remaining);
- 
-    // column: 2, row: 1, options: 10, total_options_remaining: 1, set_method: Calculated, set_column: 1, set_row: 0 }
-
     if self.options & option > 0 && self.total_options_remaining > 1 {
       // Check if option to remove exists and not last option
       self.options &= !option;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
-        self.set_remaining_option(self.options); // Set last remaining option's column and row
+        self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       }
     }
-
-    // println!("{:?}", self);
 
     last_option_found
   }
@@ -125,7 +119,7 @@ impl<'a> Cell<'a> {
       self.total_options_remaining -= number_of_bits_set(remove_options);
 
       if self.total_options_remaining == 1 {
-        self.set_remaining_option(self.options); // Set last remaining option's column and row
+        self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       } else {

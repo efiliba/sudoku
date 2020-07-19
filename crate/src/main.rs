@@ -28,11 +28,6 @@ fn main() {
     4, 0, 0, 8
   ];
 
-  let _test2x1 = vec![
-    1, 0,
-    0, 0
-  ];
-
   let output = solve(2, 3, hard2x3);
   // Output: [                  - strikeOutFromSetCells only
   //   48, 60, 56, 49, 57, 2,

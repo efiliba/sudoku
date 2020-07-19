@@ -12,8 +12,8 @@ export interface IOption {
 // Arrays of last options found and options removed from all columns / rows in the sub grid
 export interface IStruckOutCell {
 	lastOptionFound: IOption;
-	removedOptionFromColumn: IOption;
-	removedOptionFromRow: IOption;
+	removeOptionFromColumn: IOption;
+	removeOptionFromRow: IOption;
 }
 
 export interface IStruckOutCells {
@@ -336,32 +336,32 @@ export class SubGrid implements ISubGrid {
 
 	private getStruckOutCell(column: number, row: number, option: number): IStruckOutCell {
 		let lastOptionFound: IOption;
-		let removedOptionFromColumn: IOption;
-		let removedOptionFromRow: IOption;
+		let removeOptionFromColumn: IOption;
+		let removeOptionFromRow: IOption;
 
 		if (this.cells[row][column].removeOption(option)) {
 			lastOptionFound = { subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options };
 		} else {
 			if (this.optionRemovedFromColumn(column, row, option)) {
-				removedOptionFromColumn = { subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option };
+				removeOptionFromColumn = { subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: -1, bits: option };
 			}
 			if (this.optionRemovedFromRow(column, row, option)) {
-				removedOptionFromRow = { subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: row, bits: option };
+				removeOptionFromRow = { subGridColumn: this.column, subGridRow: this.row, cellColumn: -1, cellRow: row, bits: option };
 			}
 		}
 
-		return {lastOptionFound, removedOptionFromColumn, removedOptionFromRow};
+		return {lastOptionFound, removeOptionFromColumn, removeOptionFromRow};
 	}
 
 	private addToStruckOutCells(struckOutCells: IStruckOutCells, struckOutCell: IStruckOutCell) {
 		if (struckOutCell.lastOptionFound) {
 			struckOutCells.lastOptionsFound.push(struckOutCell.lastOptionFound);
 		}
-		if (struckOutCell.removedOptionFromColumn) {
-			struckOutCells.removedOptionsFromColumn.push(struckOutCell.removedOptionFromColumn);
+		if (struckOutCell.removeOptionFromColumn) {
+			struckOutCells.removedOptionsFromColumn.push(struckOutCell.removeOptionFromColumn);
 		}
-		if (struckOutCell.removedOptionFromRow) {
-			struckOutCells.removedOptionsFromRow.push(struckOutCell.removedOptionFromRow);
+		if (struckOutCell.removeOptionFromRow) {
+			struckOutCells.removedOptionsFromRow.push(struckOutCell.removeOptionFromRow);
 		}
 	}
 

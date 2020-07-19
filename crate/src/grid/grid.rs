@@ -119,17 +119,43 @@ impl<'a> Grid<'a> {
   //   options_rows
   // }
 
+  // strike out cells after loading options instead of striking out when setting
+  // cannot borrow `*self` as mutable because it is also borrowed as immutable
+  // pub fn strike_out_from_set_cells(&mut self) {
+	// 	for sub_grid_row in 0..self.dimensions.rows {
+	// 		for sub_grid_column in 0..self.dimensions.columns {
+	// 			let sub_grid = &self.sub_grids[sub_grid_row][sub_grid_column];
+	// 			for cell_row in 0..self.dimensions.columns {
+	// 				for cell_column in 0..self.dimensions.rows {
+	// 					let cell = sub_grid.get(cell_column, cell_row);
+	// 					if cell.set_method != SetMethod::Unset {                // cell set i.e. != SetMethod.unset
+	// 						self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, cell.options);
+	// 					}
+	// 				}
+	// 			}
+  //     }
+	// 	}
+  // }
+  
   pub fn solve(&mut self) -> bool {
-    self.simplify();
-    self.eliminate();
-
-    // // Repeat while an only option found or an option removed
-    // let mut eliminated = true;
-    // while eliminated {
-    //   while self.simplify() {
-    //   }
-		//   eliminated = self.eliminate();                                // Restart simplify -> eliminate loop
+    // while self.simplify() {
     // }
+    // self.eliminate();
+    
+    // println!("DONE");
+    // println!("{:#}", self);
+
+    // Repeat while an only option found or an option removed
+    let mut eliminated = true;
+    while eliminated {
+      while self.simplify() {
+      }
+		  eliminated = self.eliminate();                                // Restart simplify -> eliminate loop
+      println!("eliminated: {}", eliminated);
+      println!("{:#}", self);
+    }
+
+    println!("DONE");
 
     self.solved()
   }
@@ -150,60 +176,42 @@ impl<'a> Grid<'a> {
     solved
   }
   
-/*
-  public removeOptionAtPosition(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    option_column: usize,
-    option_row: usize
-  ): bool {
-    const cell: ICell = self.sub_grids[sub_grid_row][sub_grid_column].get(
-      cell_column,
-      cell_row
-    );
-    if (cell.removeOptionAtPosition(option_column, option_row)) {
-      // Check if last option left
+  fn simplify(&mut self) -> bool {
+    let mut only_option_found = false;
 
-      self.strike_out(
-        sub_grid_column,
-        sub_grid_row,
-        cell_column,
-        cell_row,
-        cell.options
-      ); // Remaining option
-      return true;
-    } else {
-      return false;
+    // Check/remove only options in columns/rows/sub-grids and mulitipe options limited to a certain number of
+    //   related cells i.e. if 2 cells in a row can only contain 1 or 2 => remove from other cells in row
+    while self.remove_only_options() || self.check_limited_options() {
+      only_option_found = true;
     }
+
+    only_option_found
   }
-*/
 
-// let cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
-// if (cell.removeOption(option)) {                     						// Check if last option left
-//   this.totalSet++;
-//   this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, cell.options);	// Remaining option
-//   return true;
-// } else {
-//   return false;
-// }
-
-  fn remove_option(&mut self,
+  
+  fn remove_option(
+    &mut self,
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
     option: u64
   ) -> bool {
-    let mut cell = *self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
-    // println!("remove_option 2 from 10, but total_options_remaining is 1 {:?}", cell);
+    // let cell: &mut Cell = self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
+    let mut cell = self.sub_grids[sub_grid_row][sub_grid_column].cells[cell_row][cell_column];
+    println!("remove_option 2 from 10, but total_options_remaining is 1 {:?}", cell);
+
+    println!("Before: (remove: {}) {:#}\n\n{:#}", option, cell, self);
 
     // {column: 2, row: 1, setMethod: null, options: 10, setColumn: -1, setRow: -1, totalOptionsRemaining: 2}
     if cell.remove_option(option) {
       // Check if last option left
 
-      println!("before: {:#}", self);
+      // option removed from cell, but not self
+
+    println!("After: {:#}\n\n{:#}", cell, self);
+
+      // println!("before:\n{:#}", self);
       println!("{} {} {} {} {}",
         sub_grid_column,
         sub_grid_row,
@@ -220,24 +228,12 @@ impl<'a> Grid<'a> {
         cell.options
       );
 
-      println!("after: {:#}", self);
+      // println!("after:\n{:#}", self);
 
       return true;
     }
 
     false
-  }
-
-  pub fn simplify(&mut self) -> bool {
-    let mut only_option_found = false;
-
-    // Check/remove only options in columns/rows/sub-grids and mulitipe options limited to a certain number of
-    //   related cells i.e. if 2 cells in a row can only contain 1 or 2 => remove from other cells in row
-    while self.remove_only_options() || self.check_limited_options() {
-      only_option_found = true;
-    }
-
-    only_option_found
   }
 
   pub fn load_set_options(&mut self, options: &Vec<u64>) {
@@ -251,6 +247,7 @@ impl<'a> Grid<'a> {
             let option = sub_grid_options[cell_row * self.dimensions.rows + cell_column];
             if option > 0 {
               self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option, SetMethod::Loaded);
+              // self.load_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
             }
           }
         }
@@ -271,9 +268,6 @@ impl<'a> Grid<'a> {
   fn eliminate(&mut self) -> bool {
     let save = self.get_options_remaining();                       // Save current state
 
-    // println!("{:#}", self);
-
-
     let mut valid = true;
     let mut total_unset_options = 2;
     while valid && total_unset_options <= self.dimensions.total {
@@ -282,9 +276,6 @@ impl<'a> Grid<'a> {
         let mut column_pos = self.dimensions.columns;
         while valid && column_pos > 0 {
           let unset_cells = self.unset_cells(&mut column_pos, &mut row_pos, total_unset_options);
-
-          
-          // { grid_column_pos, grid_row_pos}
 
           let mut index = unset_cells.len();
           while valid && index > 0 {
@@ -299,9 +290,6 @@ impl<'a> Grid<'a> {
               cell.options,
               &save
             );
-
-            // println!("CELL: {} {}", cell.options, valid);
-            // println!("CELL: {:#}", self);
           }
 
           if column_pos > 0 {
@@ -362,24 +350,21 @@ impl<'a> Grid<'a> {
     let mut try_option = remaining_options & !(remaining_options - 1);  // lowest set bit value
 
     while try_option > 0 && valid {
-      // println!("try_option: {}", try_option);
-  // START1 1 2 2 3 2
-  // println!("  START1: ({}, {}) ({}, {}) {}", sub_grid_column, sub_grid_row, cell_column, cell_row, try_option);
       self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, try_option, SetMethod::Calculated);
       self.solve();
       valid = self.is_valid();
-      // println!("try_option valid: {}", valid);
 
-      println!("{:#}", self);
       self.set_options_remaining(reset_cells);                      // reset
-      println!("{:#}", self);
 
       if valid {
         remaining_options -= try_option;                            // remove tried option
         try_option = remaining_options & !(remaining_options - 1);
       } else {
         // Remove try_option i.e. resulted in an invalid state
+
+        println!("PRE invalid bit found: (remove {})\n{:#}", try_option, self);
         self.remove_option(sub_grid_column, sub_grid_row, cell_column, cell_row, try_option);
+        println!("POST:\n{:#}", self);
       }
     }
 
@@ -433,6 +418,7 @@ impl<'a> Grid<'a> {
         option
       )
     );
+
     struck_out_cells.last_options_found.append(
       &mut self.remove_options_from_row(
         sub_grid_column,
@@ -491,7 +477,7 @@ impl<'a> Grid<'a> {
     self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
   }
 
-  pub fn set_by_option(
+  fn set_by_option(
     &mut self,
     sub_grid_column: usize,
     sub_grid_row: usize,
@@ -502,6 +488,17 @@ impl<'a> Grid<'a> {
   ) {
     self.sub_grids[sub_grid_row][sub_grid_column].set_by_option(cell_column, cell_row, option, set_method);
     self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
+  }
+
+  fn load_option(
+    &mut self,
+    sub_grid_column: usize,
+    sub_grid_row: usize,
+    cell_column: usize,
+    cell_row: usize,
+    option: u64
+  ) {
+    self.sub_grids[sub_grid_row][sub_grid_column].set_by_option(cell_column, cell_row, option, SetMethod::Calculated);
   }
   
   pub fn set_by_symbol(

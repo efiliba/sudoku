@@ -155,13 +155,11 @@ export class Grid implements IGrid {
 		if (restart) {
 			this.strikeOutFromSetCells();
 		}
-		this.simplify()
-		this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel)
-		this.debug()
-		// do {                                                            // Repeat while an only option found or an option removed
-		// 	while (this.simplify())
-		// 		;
-		// } while (this.totalSet > eliminateAfter && maxRecursionLevel > 0 && this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel));
+
+		do {                                                            // Repeat while an only option found or an option removed
+			while (this.simplify())
+				;
+		} while (this.totalSet > eliminateAfter && maxRecursionLevel > 0 && this.eliminate(Grid.columns * Grid.rows, maxRecursionLevel));
 
 		return this.solved();// totalSet === columns * rows * columns * rows;
 	}

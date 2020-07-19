@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, OptionsRemaining};
-use crate::sub_grid::{BitOption, StruckOutCells};
+use crate::sub_grid::{BitOption, StruckOutCell, StruckOutCells};
 
 #[derive(Debug)]
 pub struct SubGrid<'a> {
@@ -8,7 +8,7 @@ pub struct SubGrid<'a> {
 
   pub column: usize,
   pub row: usize,
-  cells: Vec<Vec<Cell<'a>>>                                         // use get(column, row) -> returns cells[row][column]
+  pub cells: Vec<Vec<Cell<'a>>>                                     // use get(column, row) -> returns cells[row][column]
 }
 
 impl Display for SubGrid<'_> {
@@ -80,9 +80,9 @@ impl<'a> SubGrid<'a> {
     }
   }
 
-  pub fn get(&self, column: usize, row: usize) -> &Cell {
+  pub fn get2(&mut self, column: usize, row: usize) -> &'a mut Cell {
     // grids called by [column, row] but accessed by [row][column] for efficiency
-    &self.cells[row][column]
+    &mut self.cells[row][column]
   }
 
   pub fn available_options_row(&self) -> Vec<u64> {
@@ -331,9 +331,7 @@ impl<'a> SubGrid<'a> {
     cell_row: usize,
     option: u64
   ) -> StruckOutCells {
-    let mut last_options: Vec<BitOption> = Vec::new();
-    let mut removed_options_from_column: Vec<BitOption> = Vec::new();
-    let mut removed_options_from_row: Vec<BitOption> = Vec::new();
+    let mut struck_out_cells = StruckOutCells::new();
 
     let mut column;
     let mut row = self.dimensions.rows - 1;
@@ -341,101 +339,20 @@ impl<'a> SubGrid<'a> {
       column = self.dimensions.columns;
       while column > 0 {
         column -= 1;
-        if self.cells[row][column].remove_option(option) {
-          last_options.push(BitOption {
-            sub_grid_column: self.column,
-            sub_grid_row: self.row,
-            cell_column: column,
-            cell_row: row,
-            bits: self.cells[row][column].options
-          });
-        } else {
-          if self.option_removed_from_column(column, row, option) {
-            removed_options_from_column.push(BitOption {
-              sub_grid_column: self.column,
-              sub_grid_row: self.row,
-              cell_column: column,
-              cell_row: 0, // ToDo: -1,
-              bits: option
-            });
-          }
-          if self.option_removed_from_row(column, row, option) {
-            removed_options_from_row.push(BitOption {
-              sub_grid_column: self.column,
-              sub_grid_row: self.row,
-              cell_column: 0, // ToDo: -1,
-              cell_row: row,
-              bits: option
-            });
-          }
-        }
+        struck_out_cells.add(self.get_struck_out_cell(column, row, option));
       }
       row -= 1;
     }
 
     let mut column = self.dimensions.columns - 1;
     while column > cell_column {
-      if self.cells[row][column].remove_option(option) {
-        last_options.push(BitOption {
-          sub_grid_column: self.column,
-          sub_grid_row: self.row,
-          cell_column: column,
-          cell_row: row,
-          bits: self.cells[row][column].options
-        });
-      } else {
-        if self.option_removed_from_column(column, row, option) {
-          removed_options_from_column.push(BitOption {
-            sub_grid_column: self.column,
-            sub_grid_row: self.row,
-            cell_column: column,
-            cell_row: 0, // ToDo: -1,
-            bits: option
-          });
-        }
-        if self.option_removed_from_row(column, row, option) {
-          removed_options_from_row.push(BitOption {
-            sub_grid_column: self.column,
-            sub_grid_row: self.row,
-            cell_column: 0, // ToDo: -1,
-            cell_row: row,
-            bits: option
-          });
-        }
-      }
+      struck_out_cells.add(self.get_struck_out_cell(column, row, option));
       column -= 1;
     }
 
     while column > 0 {
       column -= 1;
-      if self.cells[row][column].remove_option(option) {
-        last_options.push(BitOption {
-          sub_grid_column: self.column,
-          sub_grid_row: self.row,
-          cell_column: column,
-          cell_row: row,
-          bits: self.cells[row][column].options
-        });
-      } else {
-        if self.option_removed_from_column(column, row, option) {
-          removed_options_from_column.push(BitOption {
-            sub_grid_column: self.column,
-            sub_grid_row: self.row,
-            cell_column: column,
-            cell_row: 0, // ToDo: -1,
-            bits: option
-          });
-        }
-        if self.option_removed_from_row(column, row, option) {
-          removed_options_from_row.push(BitOption {
-            sub_grid_column: self.column,
-            sub_grid_row: self.row,
-            cell_column: 0, // ToDo: -1,
-            cell_row: 0, // ToDo: -1,
-            bits: option
-          });
-        }
-      }
+      struck_out_cells.add(self.get_struck_out_cell(column, row, option));
     }
 
     while row > 0 {
@@ -443,41 +360,51 @@ impl<'a> SubGrid<'a> {
       column = self.dimensions.columns;
       while column > 0 {
         column -= 1;
-        if self.cells[row][column].remove_option(option) {
-          last_options.push(BitOption {
-            sub_grid_column: self.column,
-            sub_grid_row: self.row,
-            cell_column: column,
-            cell_row: row,
-            bits: self.cells[row][column].options
-          });
-        } else {
-          if self.option_removed_from_column(column, row, option) {
-            removed_options_from_column.push(BitOption {
-              sub_grid_column: self.column,
-              sub_grid_row: self.row,
-              cell_column: column,
-              cell_row: 0, // ToDo: -1,
-              bits: option
-            });
-          }
-          if self.option_removed_from_row(column, row, option) {
-            removed_options_from_row.push(BitOption {
-              sub_grid_column: self.column,
-              sub_grid_row: self.row,
-              cell_column: 0, // ToDo: -1,
-              cell_row: row,
-              bits: option
-            });
-          }
-        }
+        struck_out_cells.add(self.get_struck_out_cell(column, row, option));
       }
     }
 
-    StruckOutCells {
-      last_options_found: last_options,
-      removed_options_from_column,
-      removed_options_from_row
+    struck_out_cells
+  }
+
+  fn get_struck_out_cell(&mut self, column: usize, row: usize, option: u64) -> StruckOutCell {
+    let mut last_option_found: Option<BitOption> = None;
+		let mut remove_option_from_column: Option<BitOption> = None;
+    let mut remove_option_from_row: Option<BitOption> = None;
+    
+    if self.cells[row][column].remove_option(option) {
+      last_option_found = Some(BitOption {
+        sub_grid_column: self.column,
+        sub_grid_row: self.row,
+        cell_column: column,
+        cell_row: row,
+        bits: self.cells[row][column].options
+      });
+    } else {
+      if self.option_removed_from_column(column, row, option) {
+        remove_option_from_column = Some(BitOption {
+          sub_grid_column: self.column,
+          sub_grid_row: self.row,
+          cell_column: column,
+          cell_row: 0, // ToDo: -1,
+          bits: option
+        });
+      }
+      if self.option_removed_from_row(column, row, option) {
+        remove_option_from_row = Some(BitOption {
+          sub_grid_column: self.column,
+          sub_grid_row: self.row,
+          cell_column: 0, // ToDo: -1,
+          cell_row: row,
+          bits: option
+        });
+      }
+    }
+
+    StruckOutCell {
+      last_option_found,
+      remove_option_from_column,
+      remove_option_from_row
     }
   }
 
@@ -688,12 +615,7 @@ impl<'a> SubGrid<'a> {
     found
   }
 
-  pub fn option_removed_from_column(
-    &self,
-    cell_column: usize,
-    cell_row: usize,
-    option: u64
-  ) -> bool {
+  pub fn option_removed_from_column(&self, cell_column: usize, cell_row: usize, option: u64) -> bool {
     // Check if option removed from column
     let mut option_found = false;
     let mut row = self.dimensions.rows;
@@ -707,16 +629,11 @@ impl<'a> SubGrid<'a> {
       row -= 1;
       option_found = (self.cells[row][cell_column].options & option) > 0;
     }
-
+  
     !option_found                                                   // If option not found then it was removed from self sub grid's column
   }
 
-  pub fn option_removed_from_row(
-    &self,
-    cell_column: usize,
-    cell_row: usize,
-    removed_option: u64
-  ) -> bool {
+  pub fn option_removed_from_row(&self, cell_column: usize, cell_row: usize, removed_option: u64) -> bool {
     // Check if option removed from row
     let mut option_found = false;
     let mut column = self.dimensions.columns;

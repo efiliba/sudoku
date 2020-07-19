@@ -4,16 +4,16 @@ import { SubGrid, ISubGrid, IStruckOutCells, IOption } from "./subGrid";
 describe("subGrid", () => {
 	describe("2x4SubGrid", () => {
 		it("should have a 2 x 4 sub grid created", () => {
-			const columns: number = 2;
-			const rows: number = 4;
+			const columns = 2;
+			const rows = 4;
 			SubGrid.Constructor(columns, rows);
 			const subGrid: ISubGrid = new SubGrid(0, 0);
 
 			// Ensure a 2 x 4 sub grid created
 			const expectedCells: ICell[][] = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedCells[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column] = new Cell(column, row);
 				}
 			}
@@ -37,9 +37,9 @@ describe("subGrid", () => {
 
 		it("should have a 4 x 2 sub grid created", () => {
 			const expectedCells: ICell[][] = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedCells[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column] = new Cell(column, row);
 				}
 			}
@@ -83,9 +83,9 @@ describe("subGrid", () => {
 			subGrid = new SubGrid(0, 0);
 
 			expectedCells = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedCells[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column] = new Cell(column, row);
 				}
 			}
@@ -95,9 +95,9 @@ describe("subGrid", () => {
 
 		it("should have 1 removed from all cells except top left cell", () => {
 			// Remove 1 from all cells except top left cell - check 1 removed from other cells
-			let removeBit: number = 1;
-			let testColumn: number = 0;
-			let testRow: number = 0;
+			let removeBit = 1;
+			let testColumn = 0;
+			let testRow = 0;
 
 			const struckOutCells: IStruckOutCells = subGrid.strikeOutCell(testColumn, testRow, removeBit);
 			expect(struckOutCells.lastOptionsFound.length).toBe(0);       // No last options found
@@ -114,8 +114,8 @@ describe("subGrid", () => {
 			expect(removeFromRow[0].cellRow).toBe(removeBit);
 			expect(removeFromColumn[0].bits).toBe(removeBit);
 
-			for (let row: number = 0; row < rows; row++) {
-				for (let column: number = 0; column < columns; column++) {
+			for (let row = 0; row < rows; row++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column].removeOption(removeBit);
 				}
 			}
@@ -124,9 +124,9 @@ describe("subGrid", () => {
 		});
 
 		it("should also have 2 removed from all cells except top middle cell", () => {
-			let removeBit: number = 2;
-			let testColumn: number = 1;
-			let testRow: number = 0;
+			let removeBit = 2;
+			let testColumn = 1;
+			let testRow = 0;
 
 			// Remove 2 from all cells except top middle cell - check 1 & 2 removed from other cells
 			const struckOutCells: IStruckOutCells = subGrid.strikeOutCell(testColumn, testRow, removeBit);
@@ -144,8 +144,8 @@ describe("subGrid", () => {
 			expect(removeFromRow[0].cellRow).toBe(1);
 			expect(removeFromColumn[0].bits).toBe(removeBit);
 
-			for (let row: number = 0; row < rows; row++) {
-				for (let column: number = 0; column < columns; column++) {
+			for (let row = 0; row < rows; row++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column].removeOption(removeBit);
 				}
 			}
@@ -156,9 +156,9 @@ describe("subGrid", () => {
 
 		it("should have 4 removed from all cells except top right cell", () => {
 			// Remove 4 from top right cell
-			let removeBit: number = 4;
-			let testColumn: number = 2;
-			let testRow: number = 0;
+			let removeBit = 4;
+			let testColumn = 2;
+			let testRow = 0;
 
 			const struckOutCells: IStruckOutCells = subGrid.strikeOutCell(testColumn, testRow, removeBit);
 			expect(struckOutCells.lastOptionsFound.length).toBe(0);				// No last options found
@@ -175,8 +175,8 @@ describe("subGrid", () => {
 			expect(removeFromRow[0].cellRow).toBe(1);
 			expect(removeFromColumn[0].bits).toBe(removeBit);
 
-			for (let row: number = 0; row < rows; row++) {
-				for (let column: number = 0; column < columns; column++) {
+			for (let row = 0; row < rows; row++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column].removeOption(removeBit);
 				}
 			}
@@ -188,9 +188,9 @@ describe("subGrid", () => {
 
 		it("should have 8 removed from all cells except bottom left cell", () => {
 			// Remove 8 from bottom left cell
-			let removeBit: number = 8;
-			let testColumn: number = 0;
-			let testRow: number = 1;
+			let removeBit = 8;
+			let testColumn = 0;
+			let testRow = 1;
 
 			const struckOutCells: IStruckOutCells = subGrid.strikeOutCell(testColumn, testRow, removeBit);
 			expect(struckOutCells.lastOptionsFound.length).toBe(0);				// No last options found
@@ -207,8 +207,8 @@ describe("subGrid", () => {
 			expect(removeFromRow[0].cellRow).toBe(0);
 			expect(removeFromColumn[0].bits).toBe(removeBit);
 
-			for (let row: number = 0; row < rows; row++) {
-				for (let column: number = 0; column < columns; column++) {
+			for (let row = 0; row < rows; row++) {
+				for (let column = 0; column < columns; column++) {
 					expectedCells[row][column].removeOption(removeBit);
 				}
 			}
@@ -220,9 +220,9 @@ describe("subGrid", () => {
 
 		it("should have 16 removed from all cells except bottom middle cell", () => {
 			// Remove 16 from bottom middle cell
-			let removeBit: number = 16;
-			let testColumn: number = 1;
-			let testRow: number = 1;
+			let removeBit = 16;
+			let testColumn = 1;
+			let testRow = 1;
 
 			const struckOutCells: IStruckOutCells = subGrid.strikeOutCell(testColumn, testRow, removeBit);
 			const lastOptions: IOption[] = struckOutCells.lastOptionsFound;
@@ -244,8 +244,8 @@ describe("subGrid", () => {
 			expect(removeFromRow[0].cellRow).toBe(0);
 			expect(removeFromColumn[0].bits).toBe(removeBit);
 
-			for (let row: number = 0; row < rows; row++) {               	//  33 | 34 | 36        (1,6) | (2,6) | (3,6)
-				for (let column: number = 0; column < columns; column++) {  //  ------------    =   --------------------- 
+			for (let row = 0; row < rows; row++) {               	//  33 | 34 | 36        (1,6) | (2,6) | (3,6)
+				for (let column = 0; column < columns; column++) {  //  ------------    =   --------------------- 
 					expectedCells[row][column].removeOption(removeBit);     	//  40 | 48 | 32        (4,6) | (5,6) |  (6)
 				}                   																				//
 			}																															// i.e. remove 6 from other cells to solve sub grid
@@ -257,9 +257,9 @@ describe("subGrid", () => {
 
 		it("should have 6 set in bottom right cell and solved", () => {
 			// Set cells to those in last options found - i.e. 6 = 32 in bottom right cell
-			let removeBit: number = 32;
-			let testColumn: number = 2;
-			let testRow: number = 1;
+			let removeBit = 32;
+			let testColumn = 2;
+			let testRow = 1;
 
 			expect(subGrid.solved()).toBeFalsy();                     		// Not solved yet
 			expect(subGrid.get(testColumn, testRow).setMethod).not.toBeNull();
@@ -311,16 +311,16 @@ describe("subGrid", () => {
 
     describe("2x2SubGridCells", () => {
 			it("should be solved", () => {
-				const columns: number = 2;
-				const rows: number = 2;
+				const columns = 2;
+				const rows = 2;
 				SubGrid.Constructor(columns, rows);
 				const subGrid: ISubGrid = new SubGrid(0, 0);
 
 				// Ensure a 2 x 2 sub grid created
 				const expectedCells: ICell[][] = [];
-				for (let row: number = 0; row < rows; row++) {
+				for (let row = 0; row < rows; row++) {
 					expectedCells[row] = [];
-					for (let column: number = 0; column < columns; column++) {
+					for (let column = 0; column < columns; column++) {
 						expectedCells[row][column] = new Cell(column, row);
 					}
 				}
@@ -340,16 +340,16 @@ describe("subGrid", () => {
 
     describe("2x3SubGridCells", () => {
 			it("should be simplified", () => {
-				const columns: number = 2;
-				const rows: number = 3;
+				const columns = 2;
+				const rows = 3;
 				SubGrid.Constructor(columns, rows);
 				const subGrid: ISubGrid = new SubGrid(0, 0);
 
 				// Ensure a 2 x 3 sub grid created
 				const expectedCells: ICell[][] = [];
-				for (let row: number = 0; row < rows; row++) {
+				for (let row = 0; row < rows; row++) {
 					expectedCells[row] = [];
-					for (let column: number = 0; column < columns; column++) {
+					for (let column = 0; column < columns; column++) {
 						expectedCells[row][column] = new Cell(column, row);
 					}
 				}
@@ -367,8 +367,8 @@ describe("subGrid", () => {
 
 	describe("Json", () => {
 		describe("1x2", () => {
-			const columns: number = 1;
-			const rows: number = 2;
+			const columns = 1;
+			const rows = 2;
 			let subGrid: ISubGrid;
 
 			it("should be setup", () => {
@@ -407,8 +407,8 @@ describe("subGrid", () => {
 		});
 
 		describe("2x2", () => {
-			const columns: number = 2;
-			const rows: number = 2;
+			const columns = 2;
+			const rows = 2;
 			let subGrid: ISubGrid;
 
 			it("should be setup", () => {
@@ -549,8 +549,8 @@ describe("subGrid", () => {
 		});
 
 		describe("Set", () => {
-			let columns: number = 2;
-			let rows: number = 2;
+			let columns = 2;
+			let rows = 2;
 			let subGrid: ISubGrid;
 
 			it("should have 1 symbol set", () => {

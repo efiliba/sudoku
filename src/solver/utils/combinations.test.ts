@@ -10,7 +10,7 @@ describe("combinations", () => {
 	});
 
 	it("C(4, 1) = 4", () => {
-		const pick: number = 1;
+		const pick = 1;
 		const items: string[][] = combinations.select(from, pick);
 
 		const expected: string[][] = [];
@@ -24,7 +24,7 @@ describe("combinations", () => {
 
 	// C(4, 2) = 4 * 3 / 2 = 6
 	it("C(4, 2) = 6", () => {
-		const pick: number = 2;
+		const pick = 2;
 		const items: string[][] = combinations.select(from, pick);
 
 		const expected: string[][] = [];
@@ -39,7 +39,7 @@ describe("combinations", () => {
 	});
 
 	it("C(4, 3) = 4", () => {
-		const pick: number = 3;
+		const pick = 3;
 		const items: string[][] = combinations.select(from, pick);
 
 		const expected: string[][] = [];
@@ -52,7 +52,7 @@ describe("combinations", () => {
 	});
 
 	it("C(4, 4) = 1", () => {
-		const pick: number = 4;
+		const pick = 4;
 		const items: string[][] = combinations.select(from, pick);
 
 		const expected: string[][] = [];

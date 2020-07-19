@@ -268,7 +268,7 @@ describe("cell", () => {
 			});
 
 			it("should not contain bit 2", () => {
-				const options: number = cell.options;                				// 488 = 000 101 111
+				const options = cell.options;                								// 488 = 000 101 111
 				expect(cell.containsOption(2)).toBe(false);
 				expect(cell.removeOptionAtPosition(1, 0)).toBe(false);      // 2 already removed
 				expect(cell.options).toBe(options);

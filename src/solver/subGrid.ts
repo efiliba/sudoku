@@ -83,9 +83,9 @@ export class SubGrid implements ISubGrid {
 
 	public reset() {
 		this.cells = [];
-		for (let row: number = 0; row < SubGrid.rows; row++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
 			this.cells[row] = [];
-			for (let column: number = 0; column < SubGrid.columns; column++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
 				this.cells[row][column] = new Cell(column, row);
 			}
 		}
@@ -99,9 +99,9 @@ export class SubGrid implements ISubGrid {
 
 	public toJson(): IJsonSubGrid {
 		const json: IJsonSubGrid = { rows: [] };
-		for (let row: number = 0; row < SubGrid.rows; row++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
 			const jsonCells: IJsonCell[] = [];
-			for (let column: number = 0; column < SubGrid.columns; column++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
 				jsonCells.push(this.cells[row][column].json);
 			}
 			json.rows.push({ columns: jsonCells });
@@ -113,7 +113,7 @@ export class SubGrid implements ISubGrid {
 	public setJson(json: IJsonSubGrid) {
 //            this.remainingCells = SubGrid.columns * SubGrid.rows;
 
-		for (let row: number = 0; row < json.rows.length; row++) {
+		for (let row = 0; row < json.rows.length; row++) {
 			const columns: IJsonCell[] = json.rows[row].columns;
 			for (let column = 0; column < columns.length; column++) {
 				this.cells[row][column].setJson(columns[column]);
@@ -159,10 +159,10 @@ export class SubGrid implements ISubGrid {
 
 	public compare(items: ICell[][]): boolean {
 		let match: boolean = true;
-		let row: number = SubGrid.rows;
-		while (match && row--) {
-			let column: number = SubGrid.columns;
-			while (match && column--) {
+		let row = SubGrid.rows;
+		while (match && row-- > 0) {
+			let column = SubGrid.columns;
+			while (match && column-- > 0) {
 				match = this.cells[row][column].equal(items[row][column]);
 			}
 		}
@@ -175,10 +175,10 @@ export class SubGrid implements ISubGrid {
 		while (changed /*&& this.remainingCells > 0*/) {
 			changed = false;
 			
-			let row: number = SubGrid.rows;
-			while (!changed && row--) {
-				let column: number = SubGrid.columns;
-				while (!changed && column--) {
+			let row = SubGrid.rows;
+			while (!changed && row-- > 0) {
+				let column = SubGrid.columns;
+				while (!changed && column-- > 0) {
 					changed = this.cells[row][column].setMethod != null && this.removeIfExtraOptions(this.cells[row][column].options).length > 0;   // cell set i.e. != SetMethod.unset
 				}
 			}
@@ -188,11 +188,11 @@ export class SubGrid implements ISubGrid {
 	public debug(log: boolean = true): DebugSubGridType {
 		const rows: DebugSubGridType = [];
 
-		let row: number = SubGrid.rows;
-		while (row--) {
-			let column: number = SubGrid.columns;
+		let row = SubGrid.rows;
+		while (row-- > 0) {
+			let column = SubGrid.columns;
 			const optionsRow: number[] = [];
-			while (column--) {
+			while (column-- > 0) {
 				optionsRow.unshift(this.cells[row][column].options);
 			}
 			rows.unshift(optionsRow);
@@ -209,12 +209,12 @@ export class SubGrid implements ISubGrid {
 	}
 
 	public solved(): boolean {
-		let solved: boolean = true;
+		let solved = true;
 
-		let row: number = SubGrid.rows;
-		while (solved && row--) {
-			let column: number = SubGrid.columns;
-			while (solved && column--) {
+		let row = SubGrid.rows;
+		while (solved && row-- > 0) {
+			let column = SubGrid.columns;
+			while (solved && column-- > 0) {
 				solved = this.cells[row][column].solved();
 			}
 		}
@@ -226,11 +226,11 @@ export class SubGrid implements ISubGrid {
 	public getAvailableOptionsMatrix(): number[][] {
 		const matrix: number[][] = [];
 
-		let row: number = SubGrid.rows;
-		while (row--) {
+		let row = SubGrid.rows;
+		while (row-- > 0) {
 			matrix[row] = [];
-			let column: number = SubGrid.columns;
-			while (column--) {
+			let column = SubGrid.columns;
+			while (column-- > 0) {
 					matrix[row][column] = this.cells[row][column].options;
 			}
 		}
@@ -241,11 +241,11 @@ export class SubGrid implements ISubGrid {
 	public getCellsMatrix(): ICell[][] {
 		const matrix: ICell[][] = [];
 
-		let row: number = SubGrid.rows;
-		while (row--) {
+		let row = SubGrid.rows;
+		while (row-- > 0) {
 			matrix[row] = [];
-			let column: number = SubGrid.columns;
-			while (column--) {
+			let column = SubGrid.columns;
+			while (column-- > 0) {
 				matrix[row][column] = new Cell(this.cells[row][column]);
 			}
 		}
@@ -256,8 +256,8 @@ export class SubGrid implements ISubGrid {
 	public getUnsetCells(): ICell[] {
 		const unsetCells: ICell[] = [];
 
-		for (let row: number = 0; row < SubGrid.rows; row++) {
-			for (let column: number = 0; column < SubGrid.columns; column++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
 				if (!this.cells[row][column].setMethod)   {          				// cell unset i.e. == SetMethod.unset
 						unsetCells.push(new Cell(this.cells[row][column]));			// Set copy of cell
 				}
@@ -267,9 +267,9 @@ export class SubGrid implements ISubGrid {
 	}
 
 	public unsetCells(totalUnsetOptions: number): ICell[] {
-		const cells: ICell[] = this.getUnsetCells();
+		const cells = this.getUnsetCells();
 		const unset: ICell[] = [];
-		for (let index: number = 0; index < cells.length; index++) {
+		for (let index = 0; index < cells.length; index++) {
 			if (cells[index].totalOptionsRemaining === totalUnsetOptions) {
 				unset.push(cells[index]);
 			}
@@ -281,10 +281,10 @@ export class SubGrid implements ISubGrid {
 	public getAvailableOptions(): number[] {
 		const array: number[] = [];
 
-		let row: number = SubGrid.rows;
-		while (row--) {
-			let column: number = SubGrid.columns;
-			while (column--) {
+		let row = SubGrid.rows;
+		while (row-- > 0) {
+			let column = SubGrid.columns;
+			while (column-- > 0) {
 				array[row * SubGrid.columns + column] = this.cells[row][column].options;
 			}
 		}
@@ -299,10 +299,10 @@ export class SubGrid implements ISubGrid {
 		const removedOptionsFromRow: IOption[] = [];
 
 		let column: number;
-		let row: number = SubGrid.rows;
+		let row = SubGrid.rows;
 		while (--row > cellRow) {
 			column = SubGrid.columns;
-			while (column--) {
+			while (column-- > 0) {
 				if (this.cells[row][column].removeOption(option)) {
 					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 				} else {
@@ -330,7 +330,7 @@ export class SubGrid implements ISubGrid {
 			}
 		}
 
-		while (column--) {
+		while (column-- > 0) {
 			if (this.cells[row][column].removeOption(option)) {
 				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 			} else {
@@ -343,9 +343,9 @@ export class SubGrid implements ISubGrid {
 			}
 		}
 		
-		while (row--) {
+		while (row-- > 0) {
 			column = SubGrid.columns;
-			while (column--) {
+			while (column-- > 0) {
 				if (this.cells[row][column].removeOption(option)) {
 						lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 				} else {
@@ -369,7 +369,7 @@ export class SubGrid implements ISubGrid {
 	public removeOptionsFromColumn(cellColumn: number, options: number): IOption[] {
 		const lastOptions: IOption[] = [];
 
-		for (let row: number = 0; row < SubGrid.rows; row++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
 			if (this.cells[row][cellColumn].removeOptions(options)) {
 				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: cellColumn, cellRow: row, bits: this.cells[row][cellColumn].options });
 //                    this.remainingCells--;
@@ -382,7 +382,7 @@ export class SubGrid implements ISubGrid {
 	public removeOptionsFromRow(cellRow: number, options: number): IOption[] {
 		const lastOptions: IOption[] = [];
 
-		for (let column: number = 0; column < SubGrid.columns; column++) {
+		for (let column = 0; column < SubGrid.columns; column++) {
 			if (this.cells[cellRow][column].removeOptions(options)) {
 				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: cellRow, bits: this.cells[cellRow][column].options });
 //                    this.remainingCells--;
@@ -396,10 +396,10 @@ export class SubGrid implements ISubGrid {
 		const lastOptions: IOption[] = [];
 
 		let row: number;
-		let column: number = SubGrid.columns;
+		let column = SubGrid.columns;
 		while (--column > excludeColumn) {
 			row = SubGrid.rows;
-			while (row--) {
+			while (row-- > 0) {
 				if (this.cells[row][column].removeOptions(options)) {
 					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                        this.remainingCells--;
@@ -407,9 +407,9 @@ export class SubGrid implements ISubGrid {
 			}
 		}
 
-		while (column--) {
+		while (column-- > 0) {
 			row = SubGrid.rows;
-			while (row--) {
+			while (row-- > 0) {
 				if (this.cells[row][column].removeOptions(options)) {
 					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                        this.remainingCells--;
@@ -424,10 +424,10 @@ export class SubGrid implements ISubGrid {
 		const lastOptions: IOption[] = [];
 
 		let column: number;
-		let row: number = SubGrid.rows;
+		let row = SubGrid.rows;
 		while (--row > excludeRow) {
 			column = SubGrid.columns;
-			while (column--) {
+			while (column-- > 0) {
 				if (this.cells[row][column].removeOptions(options)) {
 					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                        this.remainingCells--;
@@ -435,9 +435,9 @@ export class SubGrid implements ISubGrid {
 			}
 		}
 
-		while (row--) {
+		while (row-- > 0) {
 			column = SubGrid.columns;
-			while (column--) {
+			while (column-- > 0) {
 				if (this.cells[row][column].removeOptions(options)) {
 					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                        this.remainingCells--;
@@ -451,7 +451,7 @@ export class SubGrid implements ISubGrid {
 	public removeIfExtraOptionsFromColumn(column: number, options: number): IOption[] {
 		const lastOptions: IOption[] = [];
 
-		for (let row: number = 0; row < SubGrid.rows; row++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
 			if (this.cells[row][column].removeOptions(options)) {
 				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                    this.remainingCells--;
@@ -464,7 +464,7 @@ export class SubGrid implements ISubGrid {
 	public removeIfExtraOptionsFromRow(row: number, options: number): IOption[] {
 		const lastOptions: IOption[] = [];
 
-		for (let column: number = 0; column < SubGrid.columns; column++) {
+		for (let column = 0; column < SubGrid.columns; column++) {
 			if (this.cells[row][column].removeOptions(options)) {
 				lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                    this.remainingCells--;
@@ -477,8 +477,8 @@ export class SubGrid implements ISubGrid {
 	public removeIfExtraOptions(options: number): IOption[] {
 		const lastOptions: IOption[] = [];
 
-		for (let row: number = 0; row < SubGrid.rows; row++) {
-			for (let column: number = 0; column < SubGrid.columns; column++) {
+		for (let row = 0; row < SubGrid.rows; row++) {
+			for (let column = 0; column < SubGrid.columns; column++) {
 				if (this.cells[row][column].removeOptions(options)) {
 					lastOptions.push({ subGridColumn: this.column, subGridRow: this.row, cellColumn: column, cellRow: row, bits: this.cells[row][column].options });
 //                        this.remainingCells--;
@@ -490,9 +490,9 @@ export class SubGrid implements ISubGrid {
 	}
 
 	public optionExistsInColumn(column: number, option: number): boolean {
-		let found: boolean = false;
-		let row: number = SubGrid.rows;
-		while (!found && row--) {
+		let found = false;
+		let row = SubGrid.rows;
+		while (!found && row-- > 0) {
 			found = this.cells[row][column].containsOption(option);
 		}
 
@@ -500,8 +500,8 @@ export class SubGrid implements ISubGrid {
 	}
 
 	public optionExistsInRow(row: number, option: number): boolean {
-		let found: boolean = false;
-		let column: number = SubGrid.columns;
+		let found = false;
+		let column = SubGrid.columns;
 		while (!found && column-- > 0) {
 				found = this.cells[row][column].containsOption(option);
 		}
@@ -511,13 +511,13 @@ export class SubGrid implements ISubGrid {
 
 	public optionRemovedFromColumn(cellColumn: number, cellRow: number, option: number): boolean {
 		// Check if option removed from column
-		let optionFound: boolean = false;
+		let optionFound = false;
 
-		let row: number = SubGrid.rows;
+		let row = SubGrid.rows;
 		while (!optionFound && --row > cellRow) {
 			optionFound = (this.cells[row][cellColumn].options & option) > 0;
 		}
-		while (!optionFound && row--) {
+		while (!optionFound && row-- > 0) {
 			optionFound = (this.cells[row][cellColumn].options & option) > 0;
 		}
 
@@ -526,12 +526,12 @@ export class SubGrid implements ISubGrid {
 
 	public optionRemovedFromRow(cellColumn: number, cellRow: number, removedOption: number): boolean {
 		// Check if option removed from row
-		let optionFound: boolean = false;
-		let column: number = SubGrid.columns;
+		let optionFound = false;
+		let column = SubGrid.columns;
 		while (!optionFound && --column > cellColumn) {
 			optionFound = (this.cells[cellRow][column].options & removedOption) > 0;
 		}
-		while (!optionFound && column--) {
+		while (!optionFound && column-- > 0) {
 			optionFound = (this.cells[cellRow][column].options & removedOption) > 0;
 		}
 

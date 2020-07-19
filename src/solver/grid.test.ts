@@ -5,8 +5,8 @@ import {SetMethod, Cell, ICell} from "./cell";
 describe("Grid", () => {
 	describe("1x2", () => {
 		it("should persist save", () => {
-			const columns: number = 1;
-			const rows: number = 2;
+			const columns = 1;
+			const rows = 2;
 			Grid.Constructor(columns, rows);
 			const grid: IGrid = new Grid();
 
@@ -50,16 +50,16 @@ describe("Grid", () => {
 
 	describe("4x1", () => {
 		it("should be set", () => {
-			const columns: number = 4;
-			const rows: number = 1;
+			const columns = 4;
+			const rows = 1;
 			Grid.Constructor(columns, rows);
 			const grid: IGrid = new Grid();
 
 			// Ensure a 1 x 4 grid created
 			const expectedSubGrids: ISubGrid[][] = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedSubGrids[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedSubGrids[row][column] = new SubGrid(column, row);
 				}
 			}
@@ -72,23 +72,23 @@ describe("Grid", () => {
 		let expectedSubGrids: ISubGrid[][];
 
 		it("should be set", () => {
-			const columns: number = 1;
-			const rows: number = 4;
+			const columns = 1;
+			const rows = 4;
 			Grid.Constructor(columns, rows);
 			grid = new Grid();
 
 			// Ensure a 4 x 1 grid created
 			expectedSubGrids = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedSubGrids[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedSubGrids[row][column] = new SubGrid(column, row);	// Columns and rows transposed
 				}
 			}
 			expect(grid.compare(expectedSubGrids)).toBeTruthy();
 
-			let row: number = rows;
-			while (row--) {
+			let row = rows;
+			while (row-- > 0) {
 				while (expectedSubGrids[row].length) {                  		// Clear sub grids
 					expectedSubGrids[row].pop();
 				}
@@ -137,8 +137,8 @@ describe("Grid", () => {
 	describe("2x2", () => {
 		let grid: IGrid;
 		let expectedSubGrids: ISubGrid[][];
-		const columns: number = 2;
-		const rows: number = 2;
+		const columns = 2;
+		const rows = 2;
 
 		it("should be set", () => {
 			Grid.Constructor(columns, rows);
@@ -146,9 +146,9 @@ describe("Grid", () => {
 
 			// Ensure a 2 x 2 grid created
 			expectedSubGrids = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedSubGrids[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedSubGrids[row][column] = new SubGrid(column, row);
 				}
 			}
@@ -393,8 +393,8 @@ describe("Grid", () => {
 			expect(grid.solve()).toBeTruthy();
 			const current: ICell[] = grid.save();
 
-			for (let row: number = 0; row < rows; row++) {
-				for (let column: number = 0; column < columns; column++) {
+			for (let row = 0; row < rows; row++) {
+				for (let column = 0; column < columns; column++) {
 					expect(current[row * columns + column].json).not.toEqual(saved[row * columns + column].json);
 				}
 			}
@@ -403,8 +403,8 @@ describe("Grid", () => {
 			//expect(grid.solve()).toBeFalsy();
 			//current = grid.save();
 
-			//for (const row: number = 0; row < rows; row++)
-			//    for (const column: number = 0; column < columns; column++)
+			//for (const row = 0; row < rows; row++)
+			//    for (const column = 0; column < columns; column++)
 			//        expect(current[row * columns + column].json).toEqual(saved[row * columns + column].json);
 		});
 
@@ -412,8 +412,8 @@ describe("Grid", () => {
 			const saved: ICell[] = grid.save();
 			//grid.load(saved);
 
-			for (let row: number = 0; row < rows; row++) {
-				for (let column: number = 0; column < columns; column++) {
+			for (let row = 0; row < rows; row++) {
+				for (let column = 0; column < columns; column++) {
 					expect(grid.save()[row * columns + column].json).toEqual(saved[row * columns + column].json);
 				}
 			}
@@ -454,16 +454,16 @@ describe("Grid", () => {
 		let expectedSubGrids: ISubGrid[][];
 
 		it("should be set", () => {
-			const columns: number = 4;
-			const rows: number = 2;
+			const columns = 4;
+			const rows = 2;
 			Grid.Constructor(columns, rows);
 			grid = new Grid();
 
 			// Ensure a 4 x 2 grid created
 			expectedSubGrids = [];
-			for (let row: number = 0; row < rows; row++) {
+			for (let row = 0; row < rows; row++) {
 				expectedSubGrids[row] = [];
-				for (let column: number = 0; column < columns; column++) {
+				for (let column = 0; column < columns; column++) {
 					expectedSubGrids[row][column] = new SubGrid(column, row);	// Columns and rows transposed
 				}
 			}
@@ -630,8 +630,8 @@ describe("Grid", () => {
 
 	describe("Json", () => {
 		describe("1x2", () => {
-			const columns: number = 1;
-			const rows: number = 2;
+			const columns = 1;
+			const rows = 2;
 			let grid: IGrid;
 
 			it("should be setup", () => {
@@ -738,8 +738,8 @@ describe("Grid", () => {
 		});
 
 		describe("2x2", () => {
-			const columns: number = 2;
-			const rows: number = 2;
+			const columns = 2;
+			const rows = 2;
 			let grid: IGrid;
 
 			it("should be setup", () => {
@@ -1878,8 +1878,8 @@ describe("Grid", () => {
 	});
 
 	describe("Set", () => {
-		const columns: number = 2;
-		const rows: number = 2;
+		const columns = 2;
+		const rows = 2;
 		let grid: IGrid;
 
 		beforeEach(() => {
@@ -2503,8 +2503,8 @@ describe("Grid", () => {
 		let grid: IGrid;
 
 		beforeEach(() => {
-			const columns: number = 2;
-			const rows: number = 2;
+			const columns = 2;
+			const rows = 2;
 			Grid.Constructor(columns, rows);
 			grid = new Grid();
 		});

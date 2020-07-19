@@ -7,12 +7,12 @@ export class Combinations<T> implements ICombinations<T> {
 	private setBitsLookupTable: number[][];                           // Lookup table of the integers with the indices number of bits set i.e. [2] = 3, 5, 6, ... (011, 101, 110 have 2 set bits)
 
 	constructor(maxItemsSelectFrom: number) {
-		const setBits: number[] = this.createSetBitsLookup(maxItemsSelectFrom);
+		const setBits = this.createSetBitsLookup(maxItemsSelectFrom);
 
 		this.setBitsLookupTable = [];
-		for (let index: number = 1; index < maxItemsSelectFrom; index++) {
+		for (let index = 1; index < maxItemsSelectFrom; index++) {
 			this.setBitsLookupTable[index] = [];
-			for (let bit: number = 0; bit < setBits.length; bit++) {   		// Get indices of items with respective choices
+			for (let bit = 0; bit < setBits.length; bit++) {   		// Get indices of items with respective choices
 				if (setBits[bit] === index) {
 					this.setBitsLookupTable[index].push(bit);
 				}
@@ -27,7 +27,7 @@ export class Combinations<T> implements ICombinations<T> {
 		let setBits = 1 << from.length;
 		let lookupTable = this.setBitsLookupTable[pick];
 
-		for (let index: number = 0; index < lookupTable.length; index++) {
+		for (let index = 0; index < lookupTable.length; index++) {
 			if (lookupTable[index] < setBits) {
 				combinations.push(this.selectElements(from, lookupTable[index]));
 			}
@@ -40,7 +40,7 @@ export class Combinations<T> implements ICombinations<T> {
 	private selectElements(from: T[], select: number): T[] {
 		//SelectElementsDelegate<T> selectElements = (elements, select) => { return elements.Where((x, i) => (1 << i & select) > 0); };
 		const elements: T[] = [];
-		for (let index: number = 0; index < from.length; index++) {
+		for (let index = 0; index < from.length; index++) {
 			if ((1 << index) & select) {
 				elements.push(from[index]);
 			}
@@ -55,8 +55,8 @@ export class Combinations<T> implements ICombinations<T> {
 		nextValues = (x) => [x, x + 1, x + 1, x + 2];
 
 		let lookupTable: number[] = nextValues(0);                    	// Starting values { 0, 1, 1, 2 }
-		for (let i: number = 2, tableSize: number = 4; i < n; i++, tableSize <<= 1) {
-			for (let j: number = 0, offset: number = tableSize >> 2; j < (tableSize >> 1) - offset; j++) {
+		for (let i = 2, tableSize = 4; i < n; i++, tableSize <<= 1) {
+			for (let j = 0, offset = tableSize >> 2; j < (tableSize >> 1) - offset; j++) {
 				// lookupTable.InsertRange(tableSize + (j << 2), nextValues(lookupTable[j + offset]));
 				Array.prototype.splice.apply(lookupTable, [tableSize + (j << 2), 0].concat(nextValues(lookupTable[j + offset])));
 			}

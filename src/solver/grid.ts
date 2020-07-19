@@ -79,9 +79,9 @@ export class Grid implements IGrid {
 
 	public reset() {
 		this.subGrids = [];
-		for (let row: number = 0; row < Grid.rows; row++) {
+		for (let row = 0; row < Grid.rows; row++) {
 			this.subGrids[row] = [];
-			for (let column: number = 0; column < Grid.columns; column++) {
+			for (let column = 0; column < Grid.columns; column++) {
 				this.subGrids[row][column] = new SubGrid(column, row);
 			}
 		}
@@ -95,9 +95,9 @@ export class Grid implements IGrid {
 
 	public toJson(): IJsonGrid {
 		const json: IJsonGrid = { rows: [] };
-		for (let row: number = 0; row < Grid.rows; row++) {
+		for (let row = 0; row < Grid.rows; row++) {
 			const jsonSubGrids: IJsonCell[] = [];
-			for (let column: number = 0; column < Grid.columns; column++) {
+			for (let column = 0; column < Grid.columns; column++) {
 				jsonSubGrids.push(this.subGrids[row][column].toJson());
 			}
 			json.rows.push({ columns: jsonSubGrids });
@@ -108,9 +108,9 @@ export class Grid implements IGrid {
 
 	public setJson(json: IJsonGrid, simplify: boolean = false) {
 		// Set sub grids' json values  
-		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
 			const jsonColumns: IJsonSubGrid[] = json.rows[subGridRow].columns;
-			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
 					this.subGrids[subGridRow][subGridColumn].setJson(jsonColumns[subGridColumn]);
 			}
 		}
@@ -139,11 +139,11 @@ export class Grid implements IGrid {
 	}
 
 	public compare(items: ISubGrid[][]): boolean {
-		let match: boolean = true;
-		let row: number = Grid.rows;
-		while (match && row--) {
-			let column: number = Grid.columns;
-			while (match && column--) {
+		let match = true;
+		let row = Grid.rows;
+		while (match && row-- > 0) {
+			let column = Grid.columns;
+			while (match && column-- > 0) {
 				match = this.subGrids[row][column].compare(items[row][column].getCellsMatrix());
 			}
 		}
@@ -167,12 +167,12 @@ export class Grid implements IGrid {
 	}
 
 	public solved(): boolean {
-		let solved: boolean = true;
+		let solved = true;
 
-		let row: number = Grid.rows;
-		while (solved && row--) {
-			let column: number = Grid.columns;
-			while (solved && column--) {
+		let row = Grid.rows;
+		while (solved && row-- > 0) {
+			let column = Grid.columns;
+			while (solved && column-- > 0) {
 				solved = this.subGrids[row][column].solved();
 			}
 		}
@@ -181,7 +181,7 @@ export class Grid implements IGrid {
 	}
 
 	public removeOptionAtPosition(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, optionColumn: number, optionRow: number): boolean {
-		const cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
+		const cell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
 		if (cell.removeOptionAtPosition(optionColumn, optionRow)) {			// Check if last option left
 			this.totalSet++;
 			this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, cell.options);	// Remaining option
@@ -192,8 +192,8 @@ export class Grid implements IGrid {
 	}
 
 	public removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): boolean {
-		let cell: ICell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
-		debugger
+		let cell = this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow);
+
 		if (cell.removeOption(option)) {                     						// Check if last option left
 			this.totalSet++;
 			this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, cell.options);	// Remaining option
@@ -204,7 +204,7 @@ export class Grid implements IGrid {
 	}
 
 	public simplify(): boolean {
-		let onlyOptionFound: boolean = false;
+		let onlyOptionFound = false;
 
 		// Check/remove only options in columns/rows/sub-grids and mulitipe options limited to a certain number of related cells i.e. if 2 cells in a row can only contain 1 or 2 => remove from other cells in row 
 		while (this.removeOnlyOptions() || this.checkLimitedOptions()) {
@@ -217,11 +217,11 @@ export class Grid implements IGrid {
 	public debug(log: boolean = true): DebugSubGridType[][] {
 		const rows: DebugSubGridType[][] = [];
 
-		let row: number = Grid.rows;
-		while (row--) {
-			let column: number = Grid.columns;
+		let row = Grid.rows;
+		while (row-- > 0) {
+			let column = Grid.columns;
 			const subGridsRow: DebugSubGridType[] = [];
-			while (column--) {
+			while (column-- > 0) {
 				subGridsRow.unshift(this.subGrids[row][column].debug(false));
 			}
 			rows.unshift(subGridsRow);
@@ -238,18 +238,17 @@ export class Grid implements IGrid {
 	}
 
 	public isValid(): boolean {
-		const valid: boolean = this.matrixValid(this.getTransposedCellsMatrix()) && this.matrixValid(this.getCellsMatrix());  // Check columns and rows contain all options and no set cell duplicted 
-
-		return valid;
+		// Check columns and rows contain all options and no set cell duplicted
+		return this.matrixValid(this.getTransposedCellsMatrix()) && this.matrixValid(this.getCellsMatrix());
 	}
 
 	private matrixValid(matrix: ICell[][]): boolean {
-		let valid: boolean = true;
-		const size: number = Grid.columns * Grid.rows;
-		let index: number = size;
-		while (valid && index--) {
-			let setOptions: number[] = this.setDistinctOptions(matrix[index]);	// Get unique set cells
-			let unsetOptions: number[] = this.unsetOptions(matrix[index]);
+		let valid = true;
+		const size = Grid.columns * Grid.rows;
+		let index = size;
+		while (valid && index-- > 0) {
+			let setOptions = this.setDistinctOptions(matrix[index]);			// Get unique set cells
+			let unsetOptions = this.unsetOptions(matrix[index]);
 
 			valid = setOptions.length + unsetOptions.length === size &&   // Ensures setOptions did not contain duplicates
 				(bitwiseOR(setOptions) | bitwiseOR(unsetOptions)) === (1 << size) - 1; // totalSetOptions | totalUnsetOptions must contain all the options
@@ -262,8 +261,8 @@ export class Grid implements IGrid {
 		// cells.Where(x => x.IsSet).GroupBy(x => x.Options).Where(x => x.Count() == 1).Select(x => x.Key);
 		let distinct: number[] = [];
 		let hash = {};
-		for (let index: number = 0; index < cells.length; index++) {
-			let options: number = cells[index].options;
+		for (let index = 0; index < cells.length; index++) {
+			let options = cells[index].options;
 			if (cells[index].setMethod && !hash[options]) {               // cell set i.e. != SetMethod.unset
 				distinct.push(options);
 				hash[options] = true;
@@ -276,7 +275,7 @@ export class Grid implements IGrid {
 	private unsetOptions(cells: ICell[]): number[] {
 		// cells.Where(x => !x.IsSet).Select(x => x.Options)
 		let options: number[] = [];
-		for (let index: number = 0; index < cells.length; index++) {
+		for (let index = 0; index < cells.length; index++) {
 			if (!cells[index].setMethod) {                       					// cell unset i.e. == SetMethod.unset
 				options.push(cells[index].options);
 			}
@@ -287,15 +286,15 @@ export class Grid implements IGrid {
 
 	private load(cells: ICell[]) {
 		const subGrid: ICell[][] = [];
-		for (let row: number = 0; row < Grid.columns; row++) {       		// Use SubGrid's number of rows i.e. swopped columns
+		for (let row = 0; row < Grid.columns; row++) {       						// Use SubGrid's number of rows i.e. swopped columns
 				subGrid[row] = [];
 		}
-		let size: number = Grid.columns * Grid.rows;
+		let size = Grid.columns * Grid.rows;
 
-		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
-			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				for (let cellRow: number = 0; cellRow < Grid.columns; cellRow++) {
-					for (let cellColumn: number = 0; cellColumn < Grid.rows; cellColumn++) {
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				for (let cellRow = 0; cellRow < Grid.columns; cellRow++) {
+					for (let cellColumn = 0; cellColumn < Grid.rows; cellColumn++) {
 						subGrid[cellRow][cellColumn] = cells[subGridRow * size * Grid.columns + subGridColumn * Grid.rows + cellRow * size + cellColumn];
 					}
 				}
@@ -306,11 +305,11 @@ export class Grid implements IGrid {
 	}
 
 	public save(): ICell[] {
-		let size: number = Grid.columns * Grid.rows;
+		let size= Grid.columns * Grid.rows;
 		let cells: ICell[] = [];
 
-		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
-			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
+		for (let subGridRow= 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn= 0; subGridColumn < Grid.columns; subGridColumn++) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getCellsMatrix();
 				for (let cellRow = 0; cellRow < Grid.columns; cellRow++) {
 					for (let cellColumn = 0; cellColumn < Grid.rows; cellColumn++) {
@@ -330,7 +329,7 @@ export class Grid implements IGrid {
 
 		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
 			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				this.subGrids[subGridRow][subGridColumn].loadSymbolPositions(transposed[subGridRow][subGridColumn])
+				this.subGrids[subGridRow][subGridColumn].loadSymbolPositions(transposed[subGridRow][subGridColumn]);
 			}
 		}
 	}
@@ -435,17 +434,16 @@ export class Grid implements IGrid {
 
 	public strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number) {
 		let struckOutCells = this.subGrids[subGridRow][subGridColumn].strikeOutCell(cellColumn, cellRow, option);
-
 		let removeOption: IOption;
 
 		let index = struckOutCells.removedOptionsFromColumn.length; 		// Distinct
-		while (index--) {  
+		while (index-- > 0) {  
 			removeOption = struckOutCells.removedOptionsFromColumn[index];
 			this.join(struckOutCells.lastOptionsFound, this.removeOptionFromOtherColumns(removeOption.subGridColumn, removeOption.subGridRow, removeOption.cellColumn, removeOption.bits));
 		}
 
 		index = struckOutCells.removedOptionsFromRow.length;
-		while (index--) {  
+		while (index-- > 0) {  
 			removeOption = struckOutCells.removedOptionsFromRow[index];
 			this.join(struckOutCells.lastOptionsFound, this.removeOptionFromOtherRows(removeOption.subGridColumn, removeOption.subGridRow, removeOption.cellRow, removeOption.bits));
 		}
@@ -455,7 +453,7 @@ export class Grid implements IGrid {
 
 		let lastOption: IOption;
 		index = struckOutCells.lastOptionsFound.length;
-		while (index--) {
+		while (index-- > 0) {
 			lastOption = struckOutCells.lastOptionsFound[index];
 			this.strikeOut(lastOption.subGridColumn, lastOption.subGridRow, lastOption.cellColumn, lastOption.cellRow, lastOption.bits);
 			// this.subGrids[lastOption.subGridRow][lastOption.subGridColumn].get(lastOption.cellColumn, lastOption.cellRow).setMethod = SetMethod.calculated;
@@ -545,10 +543,10 @@ export class Grid implements IGrid {
 	}
 
 	public fixByOptions(fixedOptions: number[]) {
-		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
-			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				for (let cellRow: number = 0; cellRow < Grid.columns; cellRow++) {
-					for (let cellColumn: number = 0; cellColumn < Grid.rows; cellColumn++) {
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				for (let cellRow = 0; cellRow < Grid.columns; cellRow++) {
+					for (let cellColumn = 0; cellColumn < Grid.rows; cellColumn++) {
 						const option = fixedOptions[(subGridRow * Grid.columns + cellRow) * Grid.columns * Grid.rows + subGridColumn * Grid.rows + cellColumn];
 						if (option) {
 							this.totalSet++;
@@ -563,10 +561,10 @@ export class Grid implements IGrid {
 
 	public fixByCsv(options: string) {
 		let option: number;
-		for (let subGridRow: number = 0; subGridRow < Grid.rows; subGridRow++) {
-			for (let subGridColumn: number = 0; subGridColumn < Grid.columns; subGridColumn++) {
-				for (let cellRow: number = 0; cellRow < Grid.columns; cellRow++) {
-					for (let cellColumn: number = 0; cellColumn < Grid.rows; cellColumn++) {
+		for (let subGridRow = 0; subGridRow < Grid.rows; subGridRow++) {
+			for (let subGridColumn = 0; subGridColumn < Grid.columns; subGridColumn++) {
+				for (let cellRow = 0; cellRow < Grid.columns; cellRow++) {
+					for (let cellColumn = 0; cellColumn < Grid.rows; cellColumn++) {
 						//                int.TryParse(options.Substring((subGridRow * columns + cellRow) * columns * rows + subGridColumn * rows + cellColumn, 1), out option);
 						if (option) {
 							this.totalSet++;
@@ -584,8 +582,8 @@ export class Grid implements IGrid {
 		this.subGrids[subGridRow][subGridColumn].get(cellColumn, cellRow).reset();
 
 		const fixedCells: number[] = [];
-		const cells: ICell[] = this.getCellsArray();
-		for (let index: number = 0; index < cells.length; index--) {
+		const cells = this.getCellsArray();
+		for (let index = 0; index < cells.length; index-- > 0) {
 			fixedCells.push(cells[index].setMethod === SetMethod.loaded || cells[index].setMethod === SetMethod.user ? cells[index].options : 0);	// Get fixed cells i.e. 0, 0, 0, 8, 4, 0, 0, 1, ...
 		}
 
@@ -597,16 +595,16 @@ export class Grid implements IGrid {
 	private getCellsArray(): ICell[] {
 		let array: ICell[] = [];
 
-		let subGridRow: number = Grid.rows;
-		while (subGridRow--) {
-			let subGridColumn: number = Grid.columns;
-			while (subGridColumn--) {
+		let subGridRow = Grid.rows;
+		while (subGridRow-- > 0) {
+			let subGridColumn = Grid.columns;
+			while (subGridColumn-- > 0) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getCellsMatrix();
 
-				let cellColumn: number = Grid.rows;
-				while (cellColumn--) {
-					let cellRow: number = Grid.columns;
-					while (cellRow--) {
+				let cellColumn = Grid.rows;
+				while (cellColumn-- > 0) {
+					let cellRow = Grid.columns;
+					while (cellRow-- > 0) {
 						array[(subGridRow * Grid.columns + cellRow) * Grid.columns * Grid.rows + subGridColumn * Grid.rows + cellColumn] = subMatrix[cellRow][cellColumn];
 					}
 				}
@@ -635,8 +633,8 @@ export class Grid implements IGrid {
 		}
 
 		let lastOption: IOption;
-		let index: number = lastOptions.length;
-		while (index--) {
+		let index = lastOptions.length;
+		while (index-- > 0) {
 			lastOption = lastOptions[index];
 			this.strikeOut(lastOption.subGridColumn, lastOption.subGridRow, lastOption.cellColumn, lastOption.cellRow, lastOption.bits);
 		}
@@ -646,8 +644,8 @@ export class Grid implements IGrid {
 
 	// Check for mulitipe options limited to a certain number of related cells i.e. 2 cells in a row can only contain 1 or 2 => remove from other cells in row
 	private checkLimitedOptions(): boolean {
-		let limitedOptions: ILimitedOption[] = this.findOptionsLimitedToMatrix(this.getTransposedCellsMatrix());// Columns
-		let limitedOptionFound: boolean = this.removeIfExtraOptionsFromColumn(limitedOptions);  // Remove options iff the cell contains other options
+		let limitedOptions = this.findOptionsLimitedToMatrix(this.getTransposedCellsMatrix());// Columns
+		let limitedOptionFound = this.removeIfExtraOptionsFromColumn(limitedOptions);  // Remove options iff the cell contains other options
 
 		if (!limitedOptionFound) {
 			limitedOptions = this.findOptionsLimitedToMatrix(this.getCellsMatrix());	// Rows
@@ -668,32 +666,32 @@ export class Grid implements IGrid {
 		let pickOptions: ICell[] = [];
 		let combinationOptions: number[] = [];
 
-		for (let cellIndex: number = 0; cellIndex < Grid.columns * Grid.rows; cellIndex++) {
+		for (let cellIndex = 0; cellIndex < Grid.columns * Grid.rows; cellIndex++) {
 			while (unsetCells.length) {                               		// Clear array
 				unsetCells.pop();
 			}
 
 			// IEnumerable<Cell> unsetCells = cells[index].Where(x => !x.IsSet);	// Get cells that are still to be set
-			let checkCells: ICell[] = cells[cellIndex];
-			let index: number = checkCells.length;
-			while (index--) {
+			let checkCells = cells[cellIndex];
+			let index = checkCells.length;
+			while (index-- > 0) {
 				if (!checkCells[index].setMethod)                      			// cell unset i.e. == SetMethod.unset
 					unsetCells.push(checkCells[index]);
 			}
-			let totalUnsetCells: number = unsetCells.length;
+			let totalUnsetCells = unsetCells.length;
 
 			// Find max remaining options, less than totalUnsetCells
 			// int maxRemainingOptions = unsetCells.Where(x => x.TotalOptionsRemaining < totalUnsetCells).Max(x => (int?) x.TotalOptionsRemaining) ?? 0;    // Max < totalUnsetCells
-			let maxRemainingOptions: number = 0;
+			let maxRemainingOptions = 0;
 			index = totalUnsetCells;
-			while (index--) {
-				let totalOptionsRemaining: number = unsetCells[index].totalOptionsRemaining;
+			while (index-- > 0) {
+				let totalOptionsRemaining = unsetCells[index].totalOptionsRemaining;
 				if (totalOptionsRemaining < totalUnsetCells && totalOptionsRemaining > maxRemainingOptions)
 					maxRemainingOptions = totalOptionsRemaining;
 			}
 
-			let found: boolean = false;
-			let pick: number = 1;
+			let found = false;
+			let pick = 1;
 			while (!found && pick++ < maxRemainingOptions) {
 				while (combinationOptions.length) {                    			// Clear arrays
 					combinationOptions.pop();
@@ -705,21 +703,21 @@ export class Grid implements IGrid {
 				// Get options with at least the number of bits to pick set
 				// IEnumerable <Cell> options = unsetCells.Where(x => x.TotalOptionsRemaining <= pick); // Get options with at least the number of bits to pick set
 				index = totalUnsetCells;
-				while (index--) {
+				while (index-- > 0) {
 					if (unsetCells[index].totalOptionsRemaining <= pick) {
 						pickOptions.push(unsetCells[index]);
 					}
 				}
 
-				let combinations: ICell[][] = Grid.combinations.select(pickOptions, pick);
+				let combinations = Grid.combinations.select(pickOptions, pick);
 				index = combinations.length;
-				while (!found && index--) {
+				while (!found && index-- > 0) {
 					// int removeOptions = BitwiseOR(enumerator.Current.Select(x => x.Options));
-					let combinationsIndex: number = combinations[index].length;
-					while (combinationsIndex--) {
+					let combinationsIndex = combinations[index].length;
+					while (combinationsIndex-- > 0) {
 						combinationOptions.push(combinations[index][combinationsIndex].options);
 					}
-					let removeOptions: number = bitwiseOR(combinationOptions);
+					let removeOptions = bitwiseOR(combinationOptions);
 
 					found = numberOfBitsSet(removeOptions) <= pick;
 					if (found) {
@@ -737,23 +735,23 @@ export class Grid implements IGrid {
 		let pickOptions: ICell[] = [];
 		let combinationOptions: number[] = [];
 
-		for (let row: number = 0; row < Grid.rows; row++) {
-			for (let column: number = 0; column < Grid.columns; column++) {
-				let unsetCells: ICell[] = this.subGrids[row][column].getUnsetCells();
-				let totalUnsetCells: number = unsetCells.length;
+		for (let row = 0; row < Grid.rows; row++) {
+			for (let column = 0; column < Grid.columns; column++) {
+				let unsetCells = this.subGrids[row][column].getUnsetCells();
+				let totalUnsetCells = unsetCells.length;
 
 				// int maxRemainingOptions = unsetCells.Where(x => x.TotalOptionsRemaining < totalUnsetCells).Max(x => (int?) x.TotalOptionsRemaining) ?? 0;    // Max < totalUnsetCells
-				let maxRemainingOptions: number = 0;
-				let index: number = totalUnsetCells;
-				while (index--) {
-					const totalOptionsRemaining: number = unsetCells[index].totalOptionsRemaining;
+				let maxRemainingOptions = 0;
+				let index = totalUnsetCells;
+				while (index-- > 0) {
+					const totalOptionsRemaining = unsetCells[index].totalOptionsRemaining;
 					if (totalOptionsRemaining < totalUnsetCells && totalOptionsRemaining > maxRemainingOptions) {
 						maxRemainingOptions = totalOptionsRemaining;
 					}
 				}
 
-				let found: boolean = false;
-				let pick: number = 1;
+				let found = false;
+				let pick = 1;
 				while (!found && pick++ < maxRemainingOptions) {
 					while (combinationOptions.length) {                       // Clear arrays
 						combinationOptions.pop();
@@ -765,21 +763,21 @@ export class Grid implements IGrid {
 					// Get options with at least the number of bits to pick set
 					// IEnumerable <Cell> options = unsetCells.Where(x => x.TotalOptionsRemaining <= pick); // Get options with at least the number of bits to pick set
 					index = totalUnsetCells;
-					while (index--) {
+					while (index-- > 0) {
 						if (unsetCells[index].totalOptionsRemaining <= pick) {
 							pickOptions.push(unsetCells[index]);
 						}
 					}
 
-					let combinations: ICell[][] = Grid.combinations.select(pickOptions, pick);
+					let combinations = Grid.combinations.select(pickOptions, pick);
 					index = combinations.length;
-					while (!found && index--) {
+					while (!found && index-- > 0) {
 						// int removeOptions = BitwiseOR(enumerator.Current.Select(x => x.Options));
-						let combinationsIndex: number = combinations[index].length;
-						while (combinationsIndex--) {
+						let combinationsIndex = combinations[index].length;
+						while (combinationsIndex-- > 0) {
 							combinationOptions.push(combinations[index][combinationsIndex].options);
 						}
-						let removeOptions: number = bitwiseOR(combinationOptions);
+						let removeOptions = bitwiseOR(combinationOptions);
 
 						found = numberOfBitsSet(removeOptions) <= pick;
 						if (found) {
@@ -797,17 +795,17 @@ export class Grid implements IGrid {
 		let lastOptions: IOption[] = [];
 
 		let limitedOption: ILimitedOption;
-		let index: number = limitedOptions.length;
-		while (index--) {
+		let index = limitedOptions.length;
+		while (index-- > 0) {
 			limitedOption = limitedOptions[index];
-			for (let row: number = 0; row < Grid.rows; row++) {
+			for (let row = 0; row < Grid.rows; row++) {
 				this.join(lastOptions, this.subGrids[row][limitedOption.column / Grid.rows >> 0].removeIfExtraOptionsFromColumn(limitedOption.column % Grid.rows, limitedOption.options));
 			}
 		}
 
 		let lastOption: IOption;
 		index = lastOptions.length;
-		while (index--) {
+		while (index-- > 0) {
 			lastOption = lastOptions[index];
 			this.strikeOut(lastOption.subGridColumn, lastOption.subGridRow, lastOption.cellColumn, lastOption.cellRow, lastOption.bits);
 		}
@@ -820,17 +818,17 @@ export class Grid implements IGrid {
 		let lastOptions: IOption[] = [];
 
 		let limitedOption: ILimitedOption;
-		let index: number = limitedOptions.length;
-		while (index--) {
+		let index = limitedOptions.length;
+		while (index-- > 0) {
 			limitedOption = limitedOptions[index];
-			for (let column: number = 0; column < Grid.columns; column++) {
+			for (let column = 0; column < Grid.columns; column++) {
 					this.join(lastOptions, this.subGrids[limitedOption.row / Grid.columns >> 0][column].removeIfExtraOptionsFromRow(limitedOption.row % Grid.columns, limitedOption.options));
 			}
 		}
 
 		let lastOption: IOption;
 		index = lastOptions.length;
-		while (index--) {
+		while (index-- > 0) {
 			lastOption = lastOptions[index];
 			this.strikeOut(lastOption.subGridColumn, lastOption.subGridRow, lastOption.cellColumn, lastOption.cellRow, lastOption.bits);
 		}
@@ -843,15 +841,15 @@ export class Grid implements IGrid {
 		let lastOptions: IOption[] = [];
 
 		let limitedOption: ILimitedOption;
-		let index: number = limitedOptions.length;
-		while (index--) {
+		let index = limitedOptions.length;
+		while (index-- > 0) {
 			limitedOption = limitedOptions[index];
 			this.join(lastOptions, this.subGrids[limitedOption.row][limitedOption.column].removeIfExtraOptions(limitedOption.options));
 		}
 
 		let lastOption: IOption;
 		index = lastOptions.length;
-		while (index--) {
+		while (index-- > 0) {
 			lastOption = lastOptions[index];
 			this.strikeOut(lastOption.subGridColumn, lastOption.subGridRow, lastOption.cellColumn, lastOption.cellRow, lastOption.bits);
 		}
@@ -864,11 +862,11 @@ export class Grid implements IGrid {
 		let lastOptions: IOption[] = [];
 
 		// Ignore subGridRow
-		let row: number = Grid.rows;
+		let row = Grid.rows;
 		while (--row > subGridRow) {
 				this.join(lastOptions, this.subGrids[row][subGridColumn].removeOptionsFromColumn(cellColumn, options));
 		}
-		while (row--) {
+		while (row-- > 0) {
 				this.join(lastOptions, this.subGrids[row][subGridColumn].removeOptionsFromColumn(cellColumn, options));
 		}
 
@@ -879,12 +877,12 @@ export class Grid implements IGrid {
 		let lastOptions: IOption[] = [];
 
 		// Ignore subGridColumn
-		let column: number = Grid.columns;
+		let column = Grid.columns;
 		while (--column > subGridColumn) {
 				this.join(lastOptions, this.subGrids[subGridRow][column].removeOptionsFromRow(cellRow, options));
 		}
 
-		while (column--) {
+		while (column-- > 0) {
 				this.join(lastOptions, this.subGrids[subGridRow][column].removeOptionsFromRow(cellRow, options));
 		}
 
@@ -896,17 +894,17 @@ export class Grid implements IGrid {
 	}
 
 	private removeOnlyColumnOptions(): boolean {
-		let onlyOptionFound: boolean = false;
+		let onlyOptionFound = false;
 
-		let matrix: number[][] = this.getTransposedAvailableOptionsMatrix();
+		let matrix = this.getTransposedAvailableOptionsMatrix();
 
 		// Check for only options in each column
-		let column: number = Grid.rows * Grid.columns;
-		while (!onlyOptionFound && column--) {
-			const {found, bit}: IOnlyOption = onlyOption(matrix[column]);
+		let column = Grid.rows * Grid.columns;
+		while (!onlyOptionFound && column-- > 0) {
+			const {found, bit} = onlyOption(matrix[column]);
 			if (found) {
 				onlyOptionFound = true;
-				let matrixRow: number = containingBitIndex(matrix[column], bit);	// Row within grid where only option found                     
+				let matrixRow = containingBitIndex(matrix[column], bit);	// Row within grid where only option found                     
 				this.setByOption(column / Grid.rows >> 0, matrixRow / Grid.columns >> 0, column % Grid.rows, matrixRow % Grid.columns, bit, SetMethod.calculated);
 			}
 		}
@@ -921,8 +919,8 @@ export class Grid implements IGrid {
 
 		// Check for only options in each row
 		let row = Grid.rows * Grid.columns;
-		while (!onlyOptionFound && row--) {
-			const {found, bit}: IOnlyOption = onlyOption(matrix[row]);
+		while (!onlyOptionFound && row-- > 0) {
+			const {found, bit} = onlyOption(matrix[row]);
 			if (found) {
 				onlyOptionFound = true;
 				let matrixColumn = containingBitIndex(matrix[row], bit);		// Column within grid where only option found                     
@@ -938,11 +936,11 @@ export class Grid implements IGrid {
 
 		// Check for only options in each sub grid
 		let row = Grid.rows;
-		while (!onlyOptionFound && row--) {
+		while (!onlyOptionFound && row-- > 0) {
 			let column = Grid.columns;
-			while (!onlyOptionFound && column--) {
+			while (!onlyOptionFound && column-- > 0) {
 				const values = this.subGrids[row][column].getAvailableOptions();
-				const {found, bit}: IOnlyOption = onlyOption(values);
+				const {found, bit} = onlyOption(values);
 				if (found) {
 					onlyOptionFound = true;
 					let arrayIndex = containingBitIndex(values, bit); // Index within array where only option found                     
@@ -1063,19 +1061,19 @@ export class Grid implements IGrid {
 
 		const subGridColumns = Grid.columns;
 		// const matrixColumns = subGridColumns * Grid.rows;      					// Use SubGrid's number of columns i.e. swopped rows
-		while (matrixRow--) {
+		while (matrixRow-- > 0) {
 			matrix[matrixRow] = [];
 		}
 
-		while (subGridRow--) {
+		while (subGridRow-- > 0) {
 			let subGridColumn = subGridColumns;
-			while (subGridColumn--) {
+			while (subGridColumn-- > 0) {
 				const subMatrix = this.subGrids[subGridRow][subGridColumn].getAvailableOptionsMatrix();
 
 				let cellColumn = Grid.rows;
-				while (cellColumn--) {
+				while (cellColumn-- > 0) {
 					let cellRow = Grid.columns;
-					while (cellRow--) {
+					while (cellRow-- > 0) {
 						matrix[subGridRow * Grid.columns + cellRow][subGridColumn * Grid.rows + cellColumn] = subMatrix[cellRow][cellColumn];
 					}
 				}
@@ -1092,19 +1090,19 @@ export class Grid implements IGrid {
 
 		let subGridRows = Grid.rows;
 		// let matrixRows = subGridRows * Grid.columns;
-		while (matrixColumn--) {
+		while (matrixColumn-- > 0) {
 			matrix[matrixColumn] = [];
 		}
 	
-		while (subGridColumn--) {
+		while (subGridColumn-- > 0) {
 			let subGridRow = subGridRows;
-			while (subGridRow--) {
+			while (subGridRow-- > 0) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getAvailableOptionsMatrix();
 
 				let cellRow = Grid.columns;
-				while (cellRow--) {
+				while (cellRow-- > 0) {
 					let cellColumn = Grid.rows;
-					while (cellColumn--) {
+					while (cellColumn-- > 0) {
 						matrix[subGridColumn * Grid.rows + cellColumn][subGridRow * Grid.columns + cellRow] = subMatrix[cellRow][cellColumn];
 					}
 				}
@@ -1121,19 +1119,19 @@ export class Grid implements IGrid {
 
 		let subGridColumns = Grid.columns;
 		// let matrixColumns = subGridColumns * Grid.rows;        					// Use SubGrid's number of columns i.e. swopped rows
-		while (matrixRow--) {
+		while (matrixRow-- > 0) {
 			matrix[matrixRow] = [];
 		}
 
-		while (subGridRow--) {
+		while (subGridRow-- > 0) {
 			let subGridColumn = subGridColumns;
-			while (subGridColumn--) {
+			while (subGridColumn-- > 0) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getCellsMatrix();
 
 				let cellColumn = Grid.rows;
-				while (cellColumn--) {
+				while (cellColumn-- > 0) {
 					let cellRow = Grid.columns;
-					while (cellRow--) {
+					while (cellRow-- > 0) {
 						matrix[subGridRow * Grid.columns + cellRow][subGridColumn * Grid.rows + cellColumn] = subMatrix[cellRow][cellColumn];
 					}
 				}
@@ -1150,19 +1148,19 @@ export class Grid implements IGrid {
 
 		let subGridRows = Grid.rows;
 		// let matrixRows = subGridRows * Grid.columns;
-		while (matrixColumn--) {
+		while (matrixColumn-- > 0) {
 			matrix[matrixColumn] = [];
 		}
 
-		while (subGridColumn--) {
+		while (subGridColumn-- > 0) {
 			let subGridRow = subGridRows;
-			while (subGridRow--) {
+			while (subGridRow-- > 0) {
 				let subMatrix = this.subGrids[subGridRow][subGridColumn].getCellsMatrix();
 
 				let cellRow = Grid.columns;
-				while (cellRow--) {
+				while (cellRow-- > 0) {
 					let cellColumn = Grid.rows;
-					while (cellColumn--) {
+					while (cellColumn-- > 0) {
 						matrix[subGridColumn * Grid.rows + cellColumn][subGridRow * Grid.columns + cellRow] = subMatrix[cellRow][cellColumn];
 					}
 				}

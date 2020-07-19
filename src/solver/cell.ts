@@ -24,7 +24,7 @@ export interface IJsonCell {
 
 export interface ICell {
 	setMethod: SetMethod;
-	readonly options: number;
+	options: number;
 	json: IJsonCell;
 	totalOptionsRemaining: number;
 
@@ -94,7 +94,7 @@ export class Cell implements ICell {
 			
 			if (copy.json.rows) {
 				this.json = { rows: [] };
-				for (let row: number = 0; row < copy.json.rows.length; row++) {
+				for (let row = 0; row < copy.json.rows.length; row++) {
 					this.json.rows[row] = { columns: [] };
 					const jsonColumns: IJsonCellColumn[] = copy.json.rows[row].columns;
 					for (let column = 0; column < jsonColumns.length; column++) {
@@ -119,7 +119,7 @@ export class Cell implements ICell {
 		this.totalOptionsRemaining = Cell.columns * Cell.rows;
 
 		this.json = { rows: [] };                                  			// Set JSON representation to all options available 
-		for (let row: number = 0, index: number = 0; row < Cell.rows; row++) {
+		for (let row = 0, index = 0; row < Cell.rows; row++) {
 			const columns: IJsonCellColumn[] = [];
 			for (let column = 0; column < Cell.columns; column++) {
 				columns.push({ symbol: Cell.symbols[index++] });
@@ -153,7 +153,7 @@ export class Cell implements ICell {
 	public removeOptionAtPosition(column: number, row: number): boolean {	// Return if last option left after removing this option
 		let lastOptionFound: boolean = false;
 
-		const bit: number = 1 << Cell.columns * row + column;
+		const bit = 1 << Cell.columns * row + column;
 		if (this.options & bit) {                                				// Check if option to remove exists
 			this.options &= ~bit;
 			if (--this.totalOptionsRemaining === 1) {
@@ -181,9 +181,6 @@ export class Cell implements ICell {
 
 	public removeOption(option: number): boolean {                   	// Return if last option left after removing this option
 		let lastOptionFound = false;
-		// debugger
-
-		console.log!(`=====>>> (${this.column}, ${this.row}) (${this.setColumn}, ${this.setRow}) ${this.options} ${option} ${this.totalOptionsRemaining}`);
 
 		if (this.options & option && this.totalOptionsRemaining > 1) { 	// Check if option to remove exists and not last option
 			this.options &= ~option;
@@ -194,7 +191,7 @@ export class Cell implements ICell {
 				lastOptionFound = true;
 			}
 			else {
-				const index: number = powerOf2BitPositions[option];
+				const index = powerOf2BitPositions[option];
 				this.json.rows[index / Cell.columns >> 0].columns[index % Cell.columns].strikeOut = true;
 			}
 		}
@@ -250,7 +247,7 @@ export class Cell implements ICell {
 	}
 
 	public containsOptionAtPosition(column: number, row: number): boolean {
-		const bit: number = 1 << row * Cell.columns + column;
+		const bit = 1 << row * Cell.columns + column;
 		return (this.options & bit) > 0;
 	}
 
@@ -283,7 +280,7 @@ export class Cell implements ICell {
 
 	public removedOptionsPerRow(row: number): number[] {
 		const removedOptions: number[] = [];
-		for (let column: number = 0, bit: number = 1 << row * Cell.columns; column < Cell.columns; column++, bit <<= 1) {	// bit = 1 << row * columns + column
+		for (let column = 0, bit = 1 << row * Cell.columns; column < Cell.columns; column++, bit <<= 1) {	// bit = 1 << row * columns + column
 			if (!(this.options & bit)) {
 				removedOptions.push(column);
 			}
@@ -301,7 +298,7 @@ export class Cell implements ICell {
 		if (json.rows) {
 			this.options = 0;
 			this.totalOptionsRemaining = 0;
-			for (let row: number = 0, option: number = 1; row < json.rows.length; row++) {
+			for (let row = 0, option = 1; row < json.rows.length; row++) {
 				const columns: IJsonCellColumn[] = json.rows[row].columns;
 				for (let column = 0; column < columns.length; column++, option <<= 1) {
 					if (!columns[column].strikeOut) {

@@ -145,8 +145,8 @@ describe("bitUtilities", () => {
 
 		it("should match highestBitPosition function", () => {
 			const localHighestBitPosition = (value: number): number => {
-				let index: number = 0;
-				let bit: number = 1;
+				let index = 0;
+				let bit = 1;
 				while (bit <= value) {
 					bit <<= 1;
 					index++;
@@ -155,7 +155,7 @@ describe("bitUtilities", () => {
 				return index - 1;
 			};
 
-			for (let index: number = 1; index < 32; index++)
+			for (let index = 1; index < 32; index++)
 				expect(highestBitPosition(index)).toBe(localHighestBitPosition(index));
 		});
 	});
@@ -174,7 +174,7 @@ describe("bitUtilities", () => {
 			expect(powerOf2BitPositions[512]).toBe(9);
 			expect(powerOf2BitPositions[1024]).toBe(10);
 
-			for (let index: number = 0; index < 31; index++)
+			for (let index = 0; index < 31; index++)
 				expect(powerOf2BitPositions[1 << index]).toBe(index);
 
 			expect(powerOf2BitPositions[2147483648]).toBe(31);

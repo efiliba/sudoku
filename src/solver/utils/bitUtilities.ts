@@ -9,7 +9,7 @@ interface IHashMapOfPowerOf2 {
 
 // Population count
 export const numberOfBitsSet = (bits: number): number => {
-  let count: number = 0;
+  let count = 0;
   while (bits) {
     bits &= bits - 1;
     count++;
@@ -20,8 +20,8 @@ export const numberOfBitsSet = (bits: number): number => {
 
 // Return bits set within all passed elements (not XOR)
 export const bitwiseOR = (elements: number[]): number => {
-  let totalOred: number = 0;
-  for (let index: number = 0; index < elements.length; index++)
+  let totalOred = 0;
+  for (let index = 0; index < elements.length; index++)
     totalOred |= elements[index];
 
   return totalOred;
@@ -29,9 +29,9 @@ export const bitwiseOR = (elements: number[]): number => {
 
 // XOR all the values passed in to find an only option
 export const onlyOption = (options: number[]): IOnlyOption => {
-  let option: number = 0;
-  let filled: number = 0;
-  for (let index: number = 0; index < options.length; index++)
+  let option = 0;
+  let filled = 0;
+  for (let index = 0; index < options.length; index++)
     if (options[index] & options[index] - 1) {                      // Not a single base of 2 number (1, 2, 4, 8, ...)
       filled |= option & options[index];
       option ^= options[index];                                     // XOR
@@ -46,7 +46,7 @@ export const onlyOption = (options: number[]): IOnlyOption => {
 
 // Index of first item in array containing bit
 export const containingBitIndex = (array: number[], bit: number): number => {
-  let index: number = 0;
+  let index = 0;
   while (!(array[index] & bit) && index < array.length)
     index++;
 

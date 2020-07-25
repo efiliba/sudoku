@@ -1,4 +1,3 @@
-pub mod dimensions;
 pub mod cell;
 
 mod cell_test;

@@ -1,23 +1,25 @@
 use std::fmt::{self, Display};
 use crate::utils::combinations::Combinations;
 use crate::utils::bit_utils::{number_of_bits_set, bitwise_or, only_option, containing_bit_index};
-use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, OptionsRemaining};
+use crate::cell::{cell::Cell, SetMethod, OptionsRemaining};
 use crate::sub_grid::{sub_grid::SubGrid, BitOption};
 use crate::grid::CellOptions;
 use crate::utils::array_utils;
 
 #[derive(Debug)]
-pub struct Grid<'a> {
-  dimensions: &'a Dimensions,
+pub struct Grid {
+  max_columns: usize,
+  max_rows: usize,
+  max_options: usize,
   combinations: Combinations,
   
-  sub_grids: Vec<Vec<SubGrid<'a>>>,                                 // use get(column, row) -> returns sub-grids[row][column]
+  sub_grids: Vec<Vec<SubGrid>>,                                     // use get(column, row) -> returns sub-grids[row][column]
 }
 
-impl Display for Grid<'_> {
-  fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Display for Grid {
+  fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
     let options_rows = self.available_options_rows();
-    let transposed_rows = array_utils::transpose_rows(self.dimensions.columns, &options_rows);
+    let transposed_rows = array_utils::transpose_rows(self.max_columns, &options_rows);
     let mut output = String::new();
     
     for row in transposed_rows.iter() {
@@ -28,44 +30,52 @@ impl Display for Grid<'_> {
   }
 }
 
-impl<'a> Grid<'a> {
-  pub fn new(dimensions: &'a Dimensions) -> Self {
-    let mut sub_grids: Vec<Vec<SubGrid>> = Vec::with_capacity(dimensions.rows);
+impl Grid {
+  pub fn new(max_columns: usize, max_rows: usize) -> Self {
+    let mut sub_grids: Vec<Vec<SubGrid>> = Vec::with_capacity(max_rows);
 
-    for row in 0..dimensions.rows {
-      sub_grids.push(Vec::with_capacity(dimensions.columns));
-      let swopped = dimensions.swop();
-      for column in 0..dimensions.columns {
-        sub_grids[row].push(SubGrid::new(swopped, column, row));
+    for row in 0..max_rows {
+      sub_grids.push(Vec::with_capacity(max_columns));
+      for column in 0..max_columns {
+        sub_grids[row].push(SubGrid::new(max_rows, max_columns, column, row));  // max columns and rows swopped
       }
     }
   
+    let max_options = max_columns * max_rows;
+
     Self {
-      dimensions,
-      combinations: Combinations::new(dimensions.total),
+      max_columns,
+      max_rows,
+      max_options,
+      combinations: Combinations::new(max_options),
       sub_grids
     }
   }
 
   pub fn reset(&mut self) {
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         self.sub_grids[row][column].reset();
       }
     }
   }
 
-  pub fn get(&self, column: usize, row: usize) -> &SubGrid {
+  pub fn get(&mut self, column: usize, row: usize) -> &SubGrid {
     // sub-grids called by [column, row] but accessed by [row][column] for efficiency
     &self.sub_grids[row][column]
   } 
+
+  // pub fn get_mut(&mut self, column: usize, row: usize) -> &mut SubGrid {
+  //   // sub-grids called by [column, row] but accessed by [row][column] for efficiency
+  //   &mut self.sub_grids[row][column]
+  // } 
   
   pub fn compare(&self, items: &Vec<Vec<SubGrid>>) -> bool {
     let mut equal = true;
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while equal && row > 0 {
       row -= 1;
-      let mut column = self.dimensions.columns;
+      let mut column = self.max_columns;
       while equal && column > 0 {
         column -= 1;
         let matrix = items[row][column].get_cells_matrix();
@@ -77,9 +87,9 @@ impl<'a> Grid<'a> {
   }
 
   pub fn available_options_rows(&self) -> Vec<Vec<u64>> {
-    let mut options_rows = Vec::with_capacity(self.dimensions.total);
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    let mut options_rows = Vec::with_capacity(self.max_options);
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         options_rows.push(self.sub_grids[row][column].available_options_row());
       }
     }
@@ -88,9 +98,9 @@ impl<'a> Grid<'a> {
   }
 
   pub fn get_options_remaining(&self) -> Vec<Vec<OptionsRemaining>> {
-    let mut options_remaining = Vec::with_capacity(self.dimensions.total);
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    let mut options_remaining = Vec::with_capacity(self.max_options);
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         options_remaining.push(self.sub_grids[row][column].get_options_remaining());
       }
     }
@@ -99,18 +109,18 @@ impl<'a> Grid<'a> {
   }
 
   pub fn set_options_remaining(&mut self, options: &Vec<Vec<OptionsRemaining>>) {
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
-        self.sub_grids[row][column].set_options_remaining(&options[row * self.dimensions.columns + column]);
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
+        self.sub_grids[row][column].set_options_remaining(&options[row * self.max_columns + column]);
       }
     }
   }
 
   // pub fn available_options_rows(&self) -> Vec<Vec<usize>> {
-  //   let mut options_rows = Vec::with_capacity(self.dimensions.rows);
-  //   for row in 0..self.dimensions.rows {
-  //     let mut options_row = Vec::with_capacity(self.dimensions.columns);
-  //     for column in 0..self.dimensions.columns {
+  //   let mut options_rows = Vec::with_capacity(self.max_rows);
+  //   for row in 0..self.max_rows {
+  //     let mut options_row = Vec::with_capacity(self.max_columns);
+  //     for column in 0..self.max_columns {
   //       options_row.extend(self.sub_grids[row][column].available_options_row());
   //     }
   //     options_rows.push(options_row);
@@ -122,11 +132,11 @@ impl<'a> Grid<'a> {
   // strike out cells after loading options instead of striking out when setting
   // cannot borrow `*self` as mutable because it is also borrowed as immutable
   // pub fn strike_out_from_set_cells(&mut self) {
-	// 	for sub_grid_row in 0..self.dimensions.rows {
-	// 		for sub_grid_column in 0..self.dimensions.columns {
+	// 	for sub_grid_row in 0..self.max_rows {
+	// 		for sub_grid_column in 0..self.max_columns {
 	// 			let sub_grid = &self.sub_grids[sub_grid_row][sub_grid_column];
-	// 			for cell_row in 0..self.dimensions.columns {
-	// 				for cell_column in 0..self.dimensions.rows {
+	// 			for cell_row in 0..self.max_columns {
+	// 				for cell_column in 0..self.max_rows {
 	// 					let cell = sub_grid.get(cell_column, cell_row);
 	// 					if cell.set_method != SetMethod::Unset {                // cell set i.e. != SetMethod.unset
 	// 						self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, cell.options);
@@ -163,10 +173,10 @@ impl<'a> Grid<'a> {
   pub fn solved(&self) -> bool {
     let mut solved = true;
 
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while solved && row > 0 {
       row -= 1;
-      let mut column = self.dimensions.columns;
+      let mut column = self.max_columns;
       while solved && column > 0 {
         column -= 1;
         solved = self.sub_grids[row][column].solved();
@@ -176,7 +186,7 @@ impl<'a> Grid<'a> {
     solved
   }
   
-  fn simplify(&mut self) -> bool {
+  pub fn simplify(&mut self) -> bool {
     let mut only_option_found = false;
 
     // Check/remove only options in columns/rows/sub-grids and mulitipe options limited to a certain number of
@@ -198,7 +208,8 @@ impl<'a> Grid<'a> {
     option: u64
   ) -> bool {
     // let cell: &mut Cell = self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
-    let mut cell = self.sub_grids[sub_grid_row][sub_grid_column].cells[cell_row][cell_column];
+    // let mut sub_grid = self.get_mut(sub_grid_column, sub_grid_row);
+    let mut cell = self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
     println!("remove_option 2 from 10, but total_options_remaining is 1 {:?}", cell);
 
     println!("Before: (remove: {}) {:#}\n\n{:#}", option, cell, self);
@@ -228,7 +239,7 @@ impl<'a> Grid<'a> {
         cell.options
       );
 
-      // println!("after:\n{:#}", self);
+      println!("after:\n{:#}", self);
 
       return true;
     }
@@ -239,12 +250,12 @@ impl<'a> Grid<'a> {
   pub fn load_set_options(&mut self, options: &Vec<u64>) {
     let grouped = array_utils::group_by_root(options);
 
-    for sub_grid_row in 0..self.dimensions.rows {
-      for sub_grid_column in 0..self.dimensions.columns {
-        let sub_grid_options = &grouped[sub_grid_row * self.dimensions.columns + sub_grid_column];
-        for cell_row in 0..self.dimensions.columns {                // dimensions columns & rows swopped
-          for cell_column in 0..self.dimensions.rows {
-            let option = sub_grid_options[cell_row * self.dimensions.rows + cell_column];
+    for sub_grid_row in 0..self.max_rows {
+      for sub_grid_column in 0..self.max_columns {
+        let sub_grid_options = &grouped[sub_grid_row * self.max_columns + sub_grid_column];
+        for cell_row in 0..self.max_columns {                // dimensions columns & rows swopped
+          for cell_column in 0..self.max_rows {
+            let option = sub_grid_options[cell_row * self.max_rows + cell_column];
             if option > 0 {
               self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option, SetMethod::Loaded);
               // self.load_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
@@ -270,10 +281,10 @@ impl<'a> Grid<'a> {
 
     let mut valid = true;
     let mut total_unset_options = 2;
-    while valid && total_unset_options <= self.dimensions.total {
-      let mut row_pos = self.dimensions.rows;
+    while valid && total_unset_options <= self.max_options {
+      let mut row_pos = self.max_rows;
       while valid && row_pos > 0 {
-        let mut column_pos = self.dimensions.columns;
+        let mut column_pos = self.max_columns;
         while valid && column_pos > 0 {
           let unset_cells = self.unset_cells(&mut column_pos, &mut row_pos, total_unset_options);
 
@@ -328,7 +339,7 @@ impl<'a> Grid<'a> {
       if !set {
         *row_pos -= 1;
         if *row_pos > 0 {
-          *column_pos = self.dimensions.columns;
+          *column_pos = self.max_columns;
         }
       }
     }
@@ -473,11 +484,11 @@ impl<'a> Grid<'a> {
       SetMethod::Loaded
     );
 
-    let option = 1 << (self.dimensions.columns * option_row + option_column);
+    let option = 1 << (self.max_columns * option_row + option_column);
     self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
   }
 
-  fn set_by_option(
+  pub fn set_by_option(
     &mut self,
     sub_grid_column: usize,
     sub_grid_row: usize,
@@ -490,7 +501,7 @@ impl<'a> Grid<'a> {
     self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
   }
 
-  fn load_option(
+  fn _load_option(
     &mut self,
     sub_grid_column: usize,
     sub_grid_row: usize,
@@ -596,24 +607,24 @@ impl<'a> Grid<'a> {
   }
 
   public fixByOptions(fixedOptions: usize[]) {
-    for (let sub_grid_row: usize = 0; sub_grid_row < self.dimensions.rows; sub_grid_row++) {
+    for (let sub_grid_row: usize = 0; sub_grid_row < self.max_rows; sub_grid_row++) {
       for (
         let sub_grid_column: usize = 0;
-        sub_grid_column < self.dimensions.columns;
+        sub_grid_column < self.max_columns;
         sub_grid_column++
       ) {
-        for (let cell_row: usize = 0; cell_row < self.dimensions.columns; cell_row++) {
+        for (let cell_row: usize = 0; cell_row < self.max_columns; cell_row++) {
           for (
             let cell_column: usize = 0;
-            cell_column < self.dimensions.rows;
+            cell_column < self.max_rows;
             cell_column++
           ) {
             const option =
               fixedOptions[
-                (sub_grid_row * self.dimensions.columns + cell_row) *
-                  self.dimensions.columns *
-                  self.dimensions.rows +
-                  sub_grid_column * self.dimensions.rows +
+                (sub_grid_row * self.max_columns + cell_row) *
+                  self.max_columns *
+                  self.max_rows +
+                  sub_grid_column * self.max_rows +
                   cell_column
               ];
             if (option) {
@@ -636,16 +647,16 @@ impl<'a> Grid<'a> {
 
   public fixByCsv(options: string) {
     let option: u64;
-    for (let sub_grid_row: usize = 0; sub_grid_row < self.dimensions.rows; sub_grid_row++) {
+    for (let sub_grid_row: usize = 0; sub_grid_row < self.max_rows; sub_grid_row++) {
       for (
         let sub_grid_column: usize = 0;
-        sub_grid_column < self.dimensions.columns;
+        sub_grid_column < self.max_columns;
         sub_grid_column++
       ) {
-        for (let cell_row: usize = 0; cell_row < self.dimensions.columns; cell_row++) {
+        for (let cell_row: usize = 0; cell_row < self.max_columns; cell_row++) {
           for (
             let cell_column: usize = 0;
-            cell_column < self.dimensions.rows;
+            cell_column < self.max_rows;
             cell_column++
           ) {
             //                int.TryParse(options.Substring((sub_grid_row * columns + cell_row) * columns * rows + sub_grid_column * rows + cell_column, 1), out option);
@@ -695,21 +706,21 @@ impl<'a> Grid<'a> {
   fn getCellsArray(): ICell[] {
     let array: ICell[] = [];
 
-    let sub_grid_row: usize = self.dimensions.rows;
+    let sub_grid_row: usize = self.max_rows;
     while (sub_grid_row--) {
-      let sub_grid_column: usize = self.dimensions.columns;
+      let sub_grid_column: usize = self.max_columns;
       while (sub_grid_column--) {
         let sub_matrix = self.sub_grids[sub_grid_row][
           sub_grid_column
         ].get_cells_matrix();
 
-        let cell_column: usize = self.dimensions.rows;
+        let cell_column: usize = self.max_rows;
         while (cell_column--) {
-          let cell_row: usize = self.dimensions.columns;
+          let cell_row: usize = self.max_columns;
           while (cell_row--) {
             array[
-              (sub_grid_row * self.dimensions.columns + cell_row) * self.dimensions.columns * self.dimensions.rows +
-                sub_grid_column * self.dimensions.rows +
+              (sub_grid_row * self.max_columns + cell_row) * self.max_columns * self.max_rows +
+                sub_grid_column * self.max_rows +
                 cell_column
             ] = sub_matrix[cell_row][cell_column];
           }
@@ -734,7 +745,7 @@ impl<'a> Grid<'a> {
       sub_grid_row,
       cell_column,
       cell_row,
-      1 << (self.dimensions.columns * option_row + option_column)
+      1 << (self.max_columns * option_row + option_column)
     );
   }
 
@@ -820,7 +831,7 @@ impl<'a> Grid<'a> {
     let mut pick_options: Vec<&Cell> = Vec::new();
     let mut combination_options: Vec<u64> = Vec::new();
 
-    for cell_index in 0..self.dimensions.total {
+    for cell_index in 0..self.max_options {
       unset_cells.clear();
 
       // IEnumerable<Cell> unset_cells = cells[index].Where(x => !x.IsSet);  // Get cells that are still to be set
@@ -896,8 +907,8 @@ impl<'a> Grid<'a> {
     let mut pick_options: Vec<&Cell> = Vec::new();
     let mut combination_options = Vec::new();
     
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         let unset_cells = self.sub_grids[row][column].get_unset_cells();
         let total_unset_cells = unset_cells.len();
 
@@ -968,11 +979,11 @@ impl<'a> Grid<'a> {
     while index > 0 {
       index -= 1;
       let limited_option = &limited_options[index];
-      for row in 0..self.dimensions.rows {
+      for row in 0..self.max_rows {
         last_options.append(&mut self.sub_grids[row][
-            (limited_option.column / self.dimensions.rows) >> 0
+            (limited_option.column / self.max_rows) >> 0
           ].remove_if_extra_options_from_column(
-            limited_option.column % self.dimensions.rows,
+            limited_option.column % self.max_rows,
             limited_option.options
           )
         );
@@ -1002,11 +1013,11 @@ impl<'a> Grid<'a> {
     while index > 0 {
       index -= 1;
       let limited_option = &limited_options[index];
-      for column in 0..self.dimensions.columns {
+      for column in 0..self.max_columns {
         last_options.append(
-          &mut self.sub_grids[(limited_option.row / self.dimensions.columns) >> 0][column]
+          &mut self.sub_grids[(limited_option.row / self.max_columns) >> 0][column]
             .remove_if_extra_options_from_row(
-              limited_option.row % self.dimensions.columns,
+              limited_option.row % self.max_columns,
               limited_option.options
             )
         )
@@ -1068,7 +1079,7 @@ impl<'a> Grid<'a> {
     let mut last_options = Vec::new();
 
     // Ignore sub_grid_row
-    let mut row = self.dimensions.rows - 1;
+    let mut row = self.max_rows - 1;
     while row > sub_grid_row {
       last_options.append(
         &mut self.sub_grids[row][sub_grid_column].remove_options_from_column(
@@ -1101,7 +1112,7 @@ impl<'a> Grid<'a> {
     let mut last_options = Vec::new();
 
     // Ignore sub_grid_column
-    let mut column = self.dimensions.columns - 1;
+    let mut column = self.max_columns - 1;
     while column > sub_grid_column {
       last_options.append(&mut self.sub_grids[sub_grid_row][column].remove_options_from_row(cell_row, options));
       column -= 1;
@@ -1127,7 +1138,7 @@ impl<'a> Grid<'a> {
     let matrix = self.get_transposed_available_options_matrix();
 
     // Check for only options in each column
-    let mut column = self.dimensions.total;
+    let mut column = self.max_options;
     while !only_option_found && column > 0 {
       column -= 1;
       let (found, bit) = only_option(&matrix[column]);
@@ -1136,10 +1147,10 @@ impl<'a> Grid<'a> {
         only_option_found = true;
         let matrix_row = containing_bit_index(&matrix[column], bit);  // Row within grid where only option found
         self.set_by_option(
-          (column / self.dimensions.rows) >> 0,
-          (matrix_row / self.dimensions.columns) >> 0,
-          column % self.dimensions.rows,
-          matrix_row % self.dimensions.columns,
+          (column / self.max_rows) >> 0,
+          (matrix_row / self.max_columns) >> 0,
+          column % self.max_rows,
+          matrix_row % self.max_columns,
           bit,
           SetMethod::Calculated
         );
@@ -1155,7 +1166,7 @@ impl<'a> Grid<'a> {
     let matrix = self.get_available_options_matrix();
 
     // Check for only options in each row
-    let mut row = self.dimensions.total;
+    let mut row = self.max_options;
     while !only_option_found && row > 0 {
       row -= 1;
       let (found, bit) = only_option(&matrix[row]);
@@ -1164,10 +1175,10 @@ impl<'a> Grid<'a> {
         only_option_found = true;
         let matrix_column = containing_bit_index(&matrix[row], bit);  // Column within grid where only option found
         self.set_by_option(
-          (matrix_column / self.dimensions.rows) >> 0,
-          (row / self.dimensions.columns) >> 0,
-          matrix_column % self.dimensions.rows,
-          row % self.dimensions.columns,
+          (matrix_column / self.max_rows) >> 0,
+          (row / self.max_columns) >> 0,
+          matrix_column % self.max_rows,
+          row % self.max_columns,
           bit,
           SetMethod::Calculated
         );
@@ -1181,11 +1192,11 @@ impl<'a> Grid<'a> {
     let mut only_option_found = false;
 
     // Check for only options in each sub grid
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while !only_option_found && row > 0 {
       row -= 1;
 
-      let mut column = self.dimensions.columns;
+      let mut column = self.max_columns;
       while !only_option_found && column > 0 {
         column -= 1;
         let values = self.sub_grids[row][column].get_available_options();
@@ -1197,8 +1208,8 @@ impl<'a> Grid<'a> {
           self.set_by_option(
             column,
             row,
-            array_index % self.dimensions.rows,
-            (array_index / self.dimensions.rows) >> 0,
+            array_index % self.max_rows,
+            (array_index / self.max_rows) >> 0,
             bit,
             SetMethod::Calculated
           );
@@ -1223,7 +1234,7 @@ impl<'a> Grid<'a> {
     let mut total_existing_rows = 0;
 
     let mut existing_column = 0;
-    let mut column = &self.dimensions.rows - 1;                     // Use SubGrid's number of columns i.e. swopped rows
+    let mut column = &self.max_rows - 1;                     // Use SubGrid's number of columns i.e. swopped rows
     while total_existing_columns < 2 && column > cell_column {
       if self.sub_grids[sub_grid_row][sub_grid_column].option_exists_in_column(column, option) {
         existing_column = column;
@@ -1244,7 +1255,7 @@ impl<'a> Grid<'a> {
     } else {
       // Check other sub grids in same column
       let mut existing_row = 0;
-      let mut row = &self.dimensions.rows - 1;
+      let mut row = &self.max_rows - 1;
       while total_existing_rows < 2 && row > sub_grid_row {
         if self.sub_grids[row][sub_grid_column].option_exists_in_column(cell_column, option) {
           existing_row = row;
@@ -1282,7 +1293,7 @@ impl<'a> Grid<'a> {
     let mut total_existing_rows = 0;
 
     let mut existing_row = 0;
-    let mut row = self.dimensions.columns - 1;                      // Use SubGrid's number of rows i.e. swopped columns
+    let mut row = self.max_columns - 1;                      // Use SubGrid's number of rows i.e. swopped columns
     while total_existing_rows < 2 && row > cell_row {
       if self.sub_grids[sub_grid_row][sub_grid_column].option_exists_in_row(row, option) {
         existing_row = row;
@@ -1303,7 +1314,7 @@ impl<'a> Grid<'a> {
     } else {
       // Check other sub grids in same row
       let mut existing_column = 0;
-      let mut column = self.dimensions.columns - 1;
+      let mut column = self.max_columns - 1;
       while total_existing_columns < 2 && column > sub_grid_column {
         if self.sub_grids[sub_grid_row][column].option_exists_in_row(cell_row, option) {
           existing_column = column;
@@ -1333,18 +1344,18 @@ impl<'a> Grid<'a> {
 
   fn get_available_options_matrix(&self) -> Vec<Vec<u64>> {
     // Get state of current grid - returned as an n*m matrix (not separated by sub grids)
-    let mut matrix = Vec::with_capacity(self.dimensions.total);
-    for _ in 0..self.dimensions.total {
+    let mut matrix = Vec::with_capacity(self.max_options);
+    for _ in 0..self.max_options {
       matrix.push(Vec::new());
     }
     
-    for sub_grid_row in 0..self.dimensions.rows {
-      for sub_grid_column in 0..self.dimensions.columns {
+    for sub_grid_row in 0..self.max_rows {
+      for sub_grid_column in 0..self.max_columns {
         let sub_matrix = self.sub_grids[sub_grid_row][sub_grid_column].get_available_options_matrix();
 
-        for cell_column in 0..self.dimensions.rows {
-          for cell_row in 0..self.dimensions.columns {
-            let matrix_column = sub_grid_column * self.dimensions.rows + cell_column;
+        for cell_column in 0..self.max_rows {
+          for cell_row in 0..self.max_columns {
+            let matrix_column = sub_grid_column * self.max_rows + cell_column;
             matrix[matrix_column].push(sub_matrix[cell_row][cell_column]);
           }
         }
@@ -1356,18 +1367,18 @@ impl<'a> Grid<'a> {
 
   fn get_transposed_available_options_matrix(&self) -> Vec<Vec<u64>> {
     // Get state of current grid - returned as a transposed n*m matrix (not separated by sub grids)
-    let mut matrix = Vec::with_capacity(self.dimensions.total);
-    for _ in 0..self.dimensions.total {
+    let mut matrix = Vec::with_capacity(self.max_options);
+    for _ in 0..self.max_options {
       matrix.push(Vec::new());
     }
 
-    for sub_grid_column in 0..self.dimensions.columns {
-      for sub_grid_row in 0..self.dimensions.rows {
+    for sub_grid_column in 0..self.max_columns {
+      for sub_grid_row in 0..self.max_rows {
         let sub_matrix = self.sub_grids[sub_grid_row][sub_grid_column].get_available_options_matrix();
 
-        for cell_row in 0..self.dimensions.columns {
-          for cell_column in 0..self.dimensions.rows {
-            let matrix_column = sub_grid_column * self.dimensions.rows + cell_column;
+        for cell_row in 0..self.max_columns {
+          for cell_column in 0..self.max_rows {
+            let matrix_column = sub_grid_column * self.max_rows + cell_column;
             matrix[matrix_column].push(sub_matrix[cell_row][cell_column]);
           }
         }
@@ -1379,18 +1390,18 @@ impl<'a> Grid<'a> {
 
   fn get_cells_matrix(&self) -> Vec<Vec<&Cell>> {
     // Get cells in current grid - returned as an n*m matrix (not separated by sub grids)
-    let mut matrix = Vec::with_capacity(self.dimensions.total);
-    for _ in 0..self.dimensions.total {
+    let mut matrix = Vec::with_capacity(self.max_options);
+    for _ in 0..self.max_options {
       matrix.push(Vec::new());
     }
     
-    for sub_grid_row in 0..self.dimensions.rows {
-      for sub_grid_column in 0..self.dimensions.columns {
+    for sub_grid_row in 0..self.max_rows {
+      for sub_grid_column in 0..self.max_columns {
         let sub_matrix = self.sub_grids[sub_grid_row][sub_grid_column].get_cells_matrix();
 
-        for cell_column in 0..self.dimensions.rows {
-          for cell_row in 0..self.dimensions.columns {
-            let matrix_column = sub_grid_column * self.dimensions.rows + cell_column;
+        for cell_column in 0..self.max_rows {
+          for cell_row in 0..self.max_columns {
+            let matrix_column = sub_grid_column * self.max_rows + cell_column;
             matrix[matrix_column].push(sub_matrix[cell_row][cell_column]);
           }
         }
@@ -1402,18 +1413,18 @@ impl<'a> Grid<'a> {
 
   fn get_transposed_cells_matrix(&self) -> Vec<Vec<&Cell>> {
     // Get state of current grid - returned as a transposed n*m matrix (not separated by sub grids)
-    let mut matrix = Vec::with_capacity(self.dimensions.total);
-    for _ in 0..self.dimensions.total {
+    let mut matrix = Vec::with_capacity(self.max_options);
+    for _ in 0..self.max_options {
       matrix.push(Vec::new());
     }
 
-    for sub_grid_column in 0..self.dimensions.columns {
-      for sub_grid_row in 0..self.dimensions.rows {
+    for sub_grid_column in 0..self.max_columns {
+      for sub_grid_row in 0..self.max_rows {
         let sub_matrix = self.sub_grids[sub_grid_row][sub_grid_column].get_cells_matrix();
 
-        for cell_row in 0..self.dimensions.columns {
-          for cell_column in 0..self.dimensions.rows {
-            let matrix_column = sub_grid_column * self.dimensions.rows + cell_column;
+        for cell_row in 0..self.max_columns {
+          for cell_column in 0..self.max_rows {
+            let matrix_column = sub_grid_column * self.max_rows + cell_column;
             matrix[matrix_column].push(sub_matrix[cell_row][cell_column]);
           }
         }

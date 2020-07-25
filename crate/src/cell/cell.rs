@@ -1,42 +1,41 @@
 use std::fmt::{self, Display};
-use crate::cell::{dimensions::Dimensions, SetMethod, SYMBOLS, OptionsRemaining};
+use crate::cell::{SetMethod, SYMBOLS, OptionsRemaining};
 use crate::utils::bit_utils::{highest_bit_position, number_of_bits_set, power_of_2_bit_positions};
 
 #[derive(Debug, Copy, Clone)]
-pub struct Cell<'a> {
-  dimensions: &'a Dimensions,
+pub struct Cell {
+  max_cells: usize,
+  max_columns: usize,
 
   pub column: usize,
   pub row: usize,
   pub options: u64,
   pub total_options_remaining: usize,
 
-  pub set_method: SetMethod,
-  set_column: usize,
-  set_row: usize,
+  pub set_method: SetMethod
 }
 
-impl Display for Cell<'_> {
-  fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Display for Cell {
+  fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
     if formatter.alternate() {
-      write!(formatter, "{:0>1$b}", self.options, (self.dimensions.total + 1) * self.dimensions.columns - 1)
+      write!(formatter, "{:0>1$b}", self.options, (self.max_cells + 1) * self.max_columns - 1)
     } else {
       write!(formatter, "{:>3}", self.options)
     }
   }
 }
 
-impl<'a> Cell<'a> {
-  pub fn new(dimensions: &'a Dimensions, column: usize, row: usize) -> Self {
+impl Cell {
+  pub fn new(max_columns: usize, max_rows: usize, column: usize, row: usize) -> Self {
+    let max_cells = max_columns * max_rows;
     Cell {
-      dimensions,
+      max_cells,
+      max_columns,
       column,
       row,
-      options: (1 << dimensions.total) - 1, // Set all bits
-      total_options_remaining: dimensions.total,
-      set_method: SetMethod::Unset,
-      set_column: 0,
-      set_row: 0,
+      options: (1 << max_cells) - 1,                                // Set all bits
+      total_options_remaining: max_cells,
+      set_method: SetMethod::Unset
     }
   }
 
@@ -45,8 +44,8 @@ impl<'a> Cell<'a> {
     // this.setRow = -1;
 
     self.set_method = SetMethod::Unset;
-    self.total_options_remaining = self.dimensions.total;
-    self.options = (1 << self.dimensions.total) - 1; // Set all bits
+    self.total_options_remaining = self.max_cells;
+    self.options = (1 << self.max_cells) - 1; // Set all bits
   }
 
   pub fn set_options_remaining(&mut self, options_remaining: &OptionsRemaining) {
@@ -55,8 +54,6 @@ impl<'a> Cell<'a> {
   }
 
   pub fn equal(&self, cell: &Cell) -> bool {
-    // (self.set_column == cell.set_column || cell.set_column == -1) &&
-    // self.set_column == cell.set_column && self.set_row == cell.set_row && self.options == cell.options
     self.options == cell.options
   }
 
@@ -65,7 +62,11 @@ impl<'a> Cell<'a> {
   }
 
   pub fn symbol(&self) -> char {
-    SYMBOLS[self.set_row * self.dimensions.columns + self.set_column]
+    let index = highest_bit_position(self.options);
+    let set_column = index % self.max_columns;
+    let set_row = index / self.max_columns >> 0;
+
+    SYMBOLS[set_row * self.max_columns + set_column]
   }
 
   pub fn get_options_remaining(&self) -> OptionsRemaining {
@@ -75,14 +76,14 @@ impl<'a> Cell<'a> {
   pub fn remove_option_at_position(&mut self, column: usize, row: usize) -> bool {
     // Return if last option left after removing this option
     let mut last_option_found = false;
-    let bit = 1 << self.dimensions.columns * row + column;
+    let bit = 1 << self.max_columns * row + column;
 
     if self.options & bit > 0 {
       // Check if option to remove exists
       self.options &= !bit;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
-        self.set_remaining_option(self.options);                    // Set last remaining option's column and row
+        // self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       }
@@ -100,7 +101,7 @@ impl<'a> Cell<'a> {
       self.options &= !option;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
-        self.set_remaining_option(self.options);                    // Set last remaining option's column and row
+        // self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       }
@@ -119,7 +120,7 @@ impl<'a> Cell<'a> {
       self.total_options_remaining -= number_of_bits_set(remove_options);
 
       if self.total_options_remaining == 1 {
-        self.set_remaining_option(self.options);                    // Set last remaining option's column and row
+        // self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       } else {
@@ -134,17 +135,13 @@ impl<'a> Cell<'a> {
   }
 
   pub fn set_by_position(&mut self, column: usize, row: usize, set_method: SetMethod) {
-    self.set_column = column;
-    self.set_row = row;
     self.set_method = set_method;
-    self.clear_all_except_at_position(self.set_column, self.set_row, self.set_method);
+    self.clear_all_except_at_position(column, row, self.set_method);
   }
 
   pub fn set_by_index(&mut self, index: usize, set_method: SetMethod) {
-    self.set_column = index % self.dimensions.columns;
-    self.set_row = index / self.dimensions.columns >> 0;
     self.set_method = set_method;
-    self.clear_all_except_at_position(self.set_column, self.set_row, self.set_method);
+    self.clear_all_except_at_position(index % self.max_columns, index / self.max_columns >> 0, self.set_method);
   }
 
   pub fn set_by_option(&mut self, option: u64, set_method: SetMethod) {
@@ -160,7 +157,7 @@ impl<'a> Cell<'a> {
   }
 
   pub fn contains_option_at_position(&self, column: usize, row: usize) -> bool {
-    let bit = 1 << row * self.dimensions.columns + column;
+    let bit = 1 << row * self.max_columns + column;
     (self.options & bit) > 0
   }
 
@@ -172,22 +169,20 @@ impl<'a> Cell<'a> {
     self.options & 1 << find_symbol_index(symbol) > 0
   }
 
-  fn set_remaining_option(&mut self, options: u64) {
-    let index = highest_bit_position(options);
-    self.set_column = index % self.dimensions.columns;
-    self.set_row = index / self.dimensions.columns >> 0;
-  }
+  // fn set_remaining_option(&mut self, options: u64) {
+  //   let index = highest_bit_position(options);
+  // }
 
   fn clear_all_except_at_position(&mut self, column: usize, row: usize, _set_method: SetMethod) {
-    self.options = 1 << self.dimensions.columns * row + column;
+    self.options = 1 << self.max_columns * row + column;
     self.total_options_remaining = 1;
   }
 
   pub fn removed_options_per_row(&mut self, row: usize) -> Vec<usize> {
-    let mut removed_options = Vec::with_capacity(self.dimensions.columns);
+    let mut removed_options = Vec::with_capacity(self.max_columns);
 
-    let mut bit = 1 << row * self.dimensions.columns;
-    for column in 0..self.dimensions.columns {
+    let mut bit = 1 << row * self.max_columns;
+    for column in 0..self.max_columns {
       if self.options & bit == 0 {
         removed_options.push(column);
       }

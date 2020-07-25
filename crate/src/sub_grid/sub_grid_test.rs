@@ -1,14 +1,13 @@
 #[cfg(test)]
-use crate::cell::{cell::Cell, dimensions::Dimensions};
+use crate::cell::cell::Cell;
 
 #[cfg(test)]
-fn init_cells(dimensions: &Dimensions) -> Vec<Vec<Cell>> {
-  let mut cells: Vec<Vec<Cell>> = Vec::with_capacity(dimensions.total);
-  let swopped = dimensions.swop();
-  for row in 0..dimensions.rows {
-    cells.push(Vec::with_capacity(dimensions.columns));
-    for column in 0..dimensions.columns {
-      cells[row].push(Cell::new(swopped, column, row));
+fn init_cells(columns: usize, rows: usize) -> Vec<Vec<Cell>> {
+  let mut cells: Vec<Vec<Cell>> = Vec::with_capacity(columns * rows);
+  for row in 0..rows {
+    cells.push(Vec::with_capacity(columns));
+    for column in 0..columns {
+      cells[row].push(Cell::new(rows, columns, column, row));       // max columns and rows swopped
     }
   }
 
@@ -17,18 +16,17 @@ fn init_cells(dimensions: &Dimensions) -> Vec<Vec<Cell>> {
 
 #[cfg(test)]
 mod sub_grid {
-  use crate::cell::{dimensions::Dimensions, SetMethod};
+  use crate::cell::SetMethod;
   use crate::sub_grid::sub_grid::SubGrid;
 
   #[test]
   fn it_creates_a_2x4_sub_grid() {
     let columns = 2;
     let rows = 4;
-    let dimensions = Dimensions::new(columns, rows);
-    let sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     // Ensure a 2 x 4 sub grid created
-    let expected_cells = super::init_cells(&dimensions);
+    let expected_cells = super::init_cells(columns, rows);
     assert!(sub_grid.compare(&expected_cells));
   }
 
@@ -36,10 +34,9 @@ mod sub_grid {
   fn it_creates_a_4x2_sub_grid() {
     let columns = 4;
     let rows = 2;
-    let dimensions = Dimensions::new(columns, rows);
-    let sub_grid = SubGrid::new(&dimensions, 1, 3);                 // Bottom right Cell of parent grid          
+    let mut sub_grid = SubGrid::new(columns, rows, 1, 3);           // Bottom right Cell of parent grid          
 
-    let expected_cells = super::init_cells(&dimensions);
+    let expected_cells = super::init_cells(columns, rows);
     assert!(sub_grid.compare(&expected_cells));
 
     assert_eq!(sub_grid.get(0, 0).options, 255);
@@ -54,8 +51,9 @@ mod sub_grid {
 
   #[test]
   fn it_solves_the_4x2_sub_grid() {
-    let dimensions = Dimensions::new(4, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 1, 3);
+    let columns = 4;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 1, 3);
 
     sub_grid.set_by_position(0, 0, 0, 0, SetMethod::User);
     sub_grid.set_by_option(1, 0, 2, SetMethod::User);
@@ -72,15 +70,16 @@ mod sub_grid {
 
 #[cfg(test)]
 mod strikes_out_options_in_3x2_sub_grid {
-  use crate::cell::{dimensions::Dimensions, SetMethod};
+  use crate::cell::SetMethod;
   use crate::sub_grid::sub_grid::SubGrid;
 
   #[test]
   fn it_strikes_out_1_from_all_cells_except_top_left() {
     // 111111 111110 111110 === 63 62 62
     // 111110 111110 111110     62 62 62
-    let dimensions = Dimensions::new(3, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let columns = 3;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     // Remove 1 from all cells except top left cell - check 1 removed from other cells
     let remove_bit = 1;
@@ -102,9 +101,9 @@ mod strikes_out_options_in_3x2_sub_grid {
     assert_eq!(remove_from_row[0].cell_row, 1);
     assert_eq!(remove_from_column[0].bits, remove_bit);
 
-    let mut expected_cells = super::init_cells(&dimensions);
-    for row in 0..dimensions.rows {
-      for column in 0..dimensions.columns {
+    let mut expected_cells = super::init_cells(columns, rows);
+    for row in 0..rows {
+      for column in 0..columns {
         expected_cells[row][column].remove_option(remove_bit);
       }
     }
@@ -117,8 +116,9 @@ mod strikes_out_options_in_3x2_sub_grid {
   fn it_also_strikes_out_2_from_all_cells_except_top_middle() {
     // 111101 111110 111100 === 61 62 60
     // 111100 111100 111100     60 60 60
-    let dimensions = Dimensions::new(3, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let columns = 3;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     sub_grid.strike_out_cell(0, 0, 1);                              // Continue from previous test
 
@@ -142,9 +142,9 @@ mod strikes_out_options_in_3x2_sub_grid {
     assert_eq!(remove_from_row[0].cell_row, 1);
     assert_eq!(remove_from_column[0].bits, remove_bit);
 
-    let mut expected_cells = super::init_cells(&dimensions);
-    for row in 0..dimensions.rows {
-      for column in 0..dimensions.columns {
+    let mut expected_cells = super::init_cells(columns, rows);
+    for row in 0..rows {
+      for column in 0..columns {
         expected_cells[row][column].remove_option(1);               // Continue from previous test
         expected_cells[row][column].remove_option(remove_bit);
       }
@@ -161,8 +161,9 @@ mod strikes_out_options_in_3x2_sub_grid {
   fn it_also_strikes_out_4_from_all_cells_except_top_right() {
     // 111001 111010 111100 === 57 58 60
     // 111000 111000 111000     56 56 56
-    let dimensions = Dimensions::new(3, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let columns = 3;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     sub_grid.strike_out_cell(0, 0, 1);                              // Continue from previous tests
     sub_grid.strike_out_cell(1, 0, 2);
@@ -187,9 +188,9 @@ mod strikes_out_options_in_3x2_sub_grid {
     assert_eq!(remove_from_row[0].cell_row, 1);
     assert_eq!(remove_from_column[0].bits, remove_bit);
 
-    let mut expected_cells = super::init_cells(&dimensions);      
-    for row in 0..dimensions.rows {
-      for column in 0..dimensions.columns {
+    let mut expected_cells = super::init_cells(columns, rows);      
+    for row in 0..rows {
+      for column in 0..columns {
         expected_cells[row][column].remove_option(1);               // Continue from previous test
         expected_cells[row][column].remove_option(2);
       
@@ -209,8 +210,9 @@ mod strikes_out_options_in_3x2_sub_grid {
   fn it_also_strikes_out_8_from_all_cells_except_bottom_left() {
     // 110001 110010 110100 === 49 50 52
     // 111000 110000 110000     56 48 48
-    let dimensions = Dimensions::new(3, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let columns = 3;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     sub_grid.strike_out_cell(0, 0, 1);                              // Continue from previous tests
     sub_grid.strike_out_cell(1, 0, 2);
@@ -236,9 +238,9 @@ mod strikes_out_options_in_3x2_sub_grid {
     assert_eq!(remove_from_row[0].cell_row, 0);
     assert_eq!(remove_from_column[0].bits, remove_bit);
 
-    let mut expected_cells = super::init_cells(&dimensions);
-    for row in 0..dimensions.rows {
-      for column in 0..dimensions.columns {
+    let mut expected_cells = super::init_cells(columns, rows);
+    for row in 0..rows {
+      for column in 0..columns {
         expected_cells[row][column].remove_option(1);               // Continue from previous test
         expected_cells[row][column].remove_option(2);
         expected_cells[row][column].remove_option(4);
@@ -260,8 +262,9 @@ mod strikes_out_options_in_3x2_sub_grid {
   fn it_also_strikes_out_16_from_all_cells_except_bottom_middle() {
     // 100001 100010 100100 === 33 34 36 === (1,6) | (2,6) | (3,6)
     // 101000 110000 100000     40 48 32     (4,6) | (5,6) |  (6)
-    let dimensions = Dimensions::new(3, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let columns = 3;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     sub_grid.strike_out_cell(0, 0, 1);                              // Continue from previous tests
     sub_grid.strike_out_cell(1, 0, 2);
@@ -292,9 +295,9 @@ mod strikes_out_options_in_3x2_sub_grid {
     assert_eq!(remove_from_row[0].cell_row, 0);
     assert_eq!(remove_from_column[0].bits, remove_bit);
     
-    let mut expected_cells = super::init_cells(&dimensions);
-    for row in 0..dimensions.rows {
-      for column in 0..dimensions.columns {
+    let mut expected_cells = super::init_cells(columns, rows);
+    for row in 0..rows {
+      for column in 0..columns {
         expected_cells[row][column].remove_option(1);               // Continue from previous test
         expected_cells[row][column].remove_option(2);
         expected_cells[row][column].remove_option(4);
@@ -318,8 +321,9 @@ mod strikes_out_options_in_3x2_sub_grid {
   fn it_also_strikes_out_32_from_all_cells_except_bottom_right_and_solves() {
     // 000001 000010 000100 === 1  2  4
     // 001000 010000 100000     8 16 32
-    let dimensions = Dimensions::new(3, 2);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let columns = 3;
+    let rows = 2;
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     sub_grid.strike_out_cell(0, 0, 1);                              // Continue from previous tests
     sub_grid.strike_out_cell(1, 0, 2);
@@ -368,7 +372,7 @@ mod strikes_out_options_in_3x2_sub_grid {
     assert!(sub_grid.solved());                                     // Sub grid solved
 
     // Re-check - cells set by their position 
-    let mut expected_cells = super::init_cells(&dimensions);
+    let mut expected_cells = super::init_cells(columns, rows);
     expected_cells[0][0].set_by_position(0, 0, SetMethod::User);    // Cells transposed to sub-grid i.e. n x m -> m x n
     expected_cells[0][1].set_by_position(1, 0, SetMethod::User);
     expected_cells[0][2].set_by_position(0, 1, SetMethod::User);
@@ -382,18 +386,17 @@ mod strikes_out_options_in_3x2_sub_grid {
 
 #[cfg(test)]
 mod sub_grid_2x2 {
-  use crate::cell::{dimensions::Dimensions, SetMethod};
+  use crate::cell::SetMethod;
   use crate::sub_grid::sub_grid::SubGrid;
 
   #[test]
   fn it_solves_the_sub_grid() {
     let columns = 2;
     let rows = 2;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut sub_grid = SubGrid::new(&dimensions, 0, 0);
+    let mut sub_grid = SubGrid::new(columns, rows, 0, 0);
 
     // Ensure a 2 x 2 sub grid created
-    let expected_cells = super::init_cells(&dimensions);
+    let expected_cells = super::init_cells(columns, rows);
     assert!(sub_grid.compare(&expected_cells));
     
     sub_grid.set_by_position(0, 0, 0, 0, SetMethod::User);          // Top left cell set to 1

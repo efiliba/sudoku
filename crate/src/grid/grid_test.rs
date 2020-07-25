@@ -1,14 +1,13 @@
 #[cfg(test)]
-use crate::cell::dimensions::Dimensions;
+use crate::sub_grid::sub_grid::SubGrid;
 
 #[cfg(test)]
-fn init_sub_grids(dimensions: &Dimensions) -> Vec<Vec<SubGrid>> {
-  let mut sub_grids: Vec<Vec<SubGrid>> = Vec::with_capacity(dimensions.total);
-  let swopped = dimensions.swop();
-  for row in 0..dimensions.rows {
-    sub_grids.push(Vec::with_capacity(dimensions.columns));
-    for column in 0..dimensions.columns {
-      sub_grids[row].push(SubGrid::new(swopped, row, column));      // Columns and rows transposed
+fn init_sub_grids(columns: usize, rows: usize) -> Vec<Vec<SubGrid>> {
+  let mut sub_grids: Vec<Vec<SubGrid>> = Vec::with_capacity(columns * rows);
+  for row in 0..rows {
+    sub_grids.push(Vec::with_capacity(columns));
+    for column in 0..columns {
+      sub_grids[row].push(SubGrid::new(rows, columns, row, column));  // Columns and rows transposed
     }
   }
 
@@ -17,16 +16,15 @@ fn init_sub_grids(dimensions: &Dimensions) -> Vec<Vec<SubGrid>> {
 
 #[cfg(test)]
 mod grid {
-  use crate::cell::{dimensions::Dimensions, SetMethod};
+  use crate::cell::SetMethod;
   use crate::grid::grid::Grid;
 
   #[test]
   fn it_solves_a_2x1_grid() {
     let columns = 2;
     let rows = 1;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
-    assert_eq!(grid.solve(), false);                                // Not solved yet
+    let mut grid = Grid::new(columns, rows);
+    assert_eq!(grid.solved(), false);                               // Not solved yet
 
     grid.set_by_option(0, 0, 0, 0, 1, SetMethod::Loaded);           // Set top left cell to 1
 
@@ -37,8 +35,7 @@ mod grid {
   fn it_solves_a_3x1_grid() {
     let columns = 3;
     let rows = 1;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
     grid.set_by_option(0, 0, 0, 0, 1, SetMethod::Loaded);           // Set top left cell to 1
     grid.set_by_option(1, 0, 0, 1, 2, SetMethod::Loaded);           // Middle cell to 2
@@ -50,10 +47,9 @@ mod grid {
   fn it_creates_a_4x1_grid() {
     let columns = 4;
     let rows = 1;
-    let dimensions = Dimensions::new(columns, rows);
-    let grid = Grid::new(&dimensions);
+    let grid = Grid::new(columns, rows);
 
-    let expected_sub_grids = super::init_sub_grids(&dimensions);
+    let expected_sub_grids = super::init_sub_grids(columns, rows);
     assert!(grid.compare(&expected_sub_grids));
   }
 
@@ -61,10 +57,9 @@ mod grid {
   fn it_simplifies_a_1x4_grid() {
     let columns = 1;
     let rows = 4;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
-    let mut expected_sub_grids = super::init_sub_grids(&dimensions);
+    let mut expected_sub_grids = super::init_sub_grids(columns, rows);
     assert!(grid.compare(&expected_sub_grids));
 
     grid.set_by_option(0, 0, 0, 0, 1, SetMethod::Loaded);           // Set top left cell to 1
@@ -95,17 +90,16 @@ mod grid {
 
 #[cfg(test)]
 mod grid_2x2 {
-  use crate::cell::{dimensions::Dimensions, SetMethod};
+  use crate::cell::SetMethod;
   use crate::grid::grid::Grid;
 
   #[test]
   fn it_simplifies_the_2x2_grid() {
     let columns = 2;
     let rows = 2;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
-    let mut expected_sub_grids = super::init_sub_grids(&dimensions);
+    let mut expected_sub_grids = super::init_sub_grids(columns, rows);
     assert!(grid.compare(&expected_sub_grids));                     // Ensure the 2 x 2 grid is set
 
     grid.fix_by_position(0, 0, 0, 0, 0, 0);                         // Set top left cell to 1
@@ -150,10 +144,9 @@ mod grid_2x2 {
   fn it_sets_bottom_right_sub_grids_top_left_cell_to_2() {
     let columns = 2;
     let rows = 2;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
-    let mut expected_sub_grids = super::init_sub_grids(&dimensions);
+    let mut expected_sub_grids = super::init_sub_grids(columns, rows);
 
     grid.fix_by_position(0, 0, 0, 0, 0, 0);                         // Continue from previous test
     grid.fix_by_position(0, 0, 1, 0, 1, 0);
@@ -208,10 +201,9 @@ mod grid_2x2 {
   fn it_sets_bottom_left_sub_grids_top_right_cell_to_2() {
     let columns = 2;
     let rows = 2;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
-    let mut expected_sub_grids = super::init_sub_grids(&dimensions);
+    let mut expected_sub_grids = super::init_sub_grids(columns, rows);
 
     grid.fix_by_position(0, 0, 0, 0, 0, 0);                         // Continue from previous test
     grid.fix_by_position(0, 0, 1, 0, 1, 0);
@@ -273,8 +265,7 @@ mod grid_2x2 {
   fn it_solves_a_2x2_grid() {
     let columns = 2;
     let rows = 2;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
     grid.set_by_option(0, 0, 0, 0, 1, SetMethod::User);             // 1 |   |   |
     grid.set_by_option(0, 0, 1, 1, 2, SetMethod::User);             //   | 2 |   |
@@ -288,7 +279,7 @@ mod grid_2x2 {
 
 #[cfg(test)]
 mod grid_3x2 {
-  use crate::cell::{dimensions::Dimensions, SetMethod};
+  use crate::cell::SetMethod;
   use crate::grid::grid::Grid;
 
   #[test]
@@ -298,8 +289,7 @@ mod grid_3x2 {
     
     let columns = 2;
     let rows = 3;
-    let dimensions = Dimensions::new(columns, rows);
-    let mut grid = Grid::new(&dimensions);
+    let mut grid = Grid::new(columns, rows);
 
     grid.set_by_symbol(0, 0, 2, 1, '2', SetMethod::Loaded);
     grid.set_by_symbol(1, 0, 0, 0, '1', SetMethod::Loaded);

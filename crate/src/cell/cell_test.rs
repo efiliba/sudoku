@@ -1,11 +1,12 @@
 #[cfg(test)]
 mod cell {
-  use crate::cell::{cell::Cell, dimensions::Dimensions};
+  use crate::cell::cell::Cell;
 
   #[test]
   fn it_contains_option_at_position() {
-    let dimensions = &Dimensions::new(4, 2);
-    let cell = Cell::new(dimensions, 0, 0);                         //  1 |  2 |  4 |  8      1 | 2 | 3 | 4
+    let max_columns = 4;
+    let max_rows = 2;
+    let cell = Cell::new(max_columns, max_rows, 0, 0);              //  1 |  2 |  4 |  8      1 | 2 | 3 | 4
     assert_eq!(cell.options, 255);                                  // ------------------  =  --------------
                                                                     // 16 | 32 | 64 | 128     5 | 6 | 7 | 8
     assert!(cell.contains_option_at_position(0, 0));
@@ -23,12 +24,13 @@ mod cell {
 
 #[cfg(test)]
 mod symbol {
-  use crate::cell::{SYMBOLS, cell::Cell, dimensions::Dimensions, SetMethod};
+  use crate::cell::{SYMBOLS, cell::Cell, SetMethod};
 
   #[test]
   fn it_sets_by_option_1() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_option(1, SetMethod::User);
     assert_eq!(cell.symbol(), '1');
@@ -36,8 +38,9 @@ mod symbol {
 
   #[test]
   fn it_sets_by_option_2() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_option(2, SetMethod::User);                         // 1 << 1 = 2
     assert_eq!(cell.symbol(), '2');
@@ -45,8 +48,9 @@ mod symbol {
 
   #[test]
   fn it_sets_by_option_a() {
-    let dimensions = &Dimensions::new(4, 4);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 4;
+    let max_rows = 4;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_option(1 << 9, SetMethod::User);
     assert_eq!(cell.symbol(), 'A');
@@ -54,8 +58,9 @@ mod symbol {
 
   #[test]
   fn it_sets_by_option_v() {
-    let dimensions = &Dimensions::new(6, 6);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 6;
+    let max_rows = 6;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_option(1 << 30, SetMethod::User);
     assert_eq!(cell.symbol(), 'V');
@@ -63,8 +68,9 @@ mod symbol {
 
   #[test]
   fn it_sets_by_option_0() {
-    let dimensions = &Dimensions::new(6, 6);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 6;
+    let max_rows = 6;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_option(1 << 35, SetMethod::User);
     assert_eq!(cell.symbol(), '0');
@@ -72,17 +78,19 @@ mod symbol {
 
   #[test]
   fn it_sets_by_position_4_5() {
-    let dimensions = &Dimensions::new(6, 6);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 6;
+    let max_rows = 6;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_position(4, 5, SetMethod::User);
     assert_eq!(cell.symbol(), 'Z');
   }
 
   #[test]
-  fn it_sets_by_position_5_5() {                                        // Max symbol
-    let dimensions = &Dimensions::new(6, 6);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+  fn it_sets_by_position_5_5() {                                    // Max symbol
+    let max_columns = 6;
+    let max_rows = 6;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_position(5, 5, SetMethod::User);
     assert_eq!(cell.symbol(), '0');
@@ -90,8 +98,9 @@ mod symbol {
 
   #[test]
   fn it_set_by_symbol_3_and_is_solved() {
-    let dimensions = &Dimensions::new(2, 2);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 2;
+    let max_rows = 2;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     cell.set_by_symbol('3', SetMethod::User);
     assert_eq!(cell.symbol(), '3');
@@ -101,8 +110,9 @@ mod symbol {
 
   #[test]
   fn it_set_by_all_symbols() {
-    let dimensions = &Dimensions::new(6, 6);
-    let mut cell = Cell::new(dimensions, 0, 0); 
+    let max_columns = 6;
+    let max_rows = 6;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0); 
 
     SYMBOLS.iter().enumerate().for_each(|(i, x)| {
       cell.set_by_symbol(*x, SetMethod::User);
@@ -113,15 +123,16 @@ mod symbol {
 
 #[cfg(test)]
 mod cell_3x3 {
-  use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod};
+  use crate::cell::{cell::Cell, SetMethod};
 
   #[test]
   fn it_sets_cell_with_no_modifications() {
-    let dimensions = &Dimensions::new(3, 3);
-    let cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let cell = Cell::new(max_columns, max_rows, 0, 0);
 
     assert_eq!(cell.options, u64::pow(2, 9) - 1);                   // All options available i.e. 511
-    assert_eq!(cell.total_options_remaining, dimensions.total);     // 3 * 3
+    assert_eq!(cell.total_options_remaining, max_columns * max_rows);
     assert_eq!(cell.solved(), false);                               // Not solved
     assert_eq!(cell.set_method, SetMethod::Unset);
 
@@ -134,8 +145,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_sets_cell_by_position_0_2() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.set_by_position(0, 2, SetMethod::User);                    // Set cell to column 0 row 2 i.e. symbol 7, bit 64
     assert_eq!(cell.total_options_remaining, 1);
@@ -155,8 +167,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_sets_cell_by_option_4() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.set_by_option(4, SetMethod::User);                          // Set cell to options 4 i.e. highest of bits 1 and 4
     assert_eq!(cell.total_options_remaining, 1);
@@ -180,8 +193,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_resets_the_cell() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.set_by_position(0, 2, SetMethod::User);
     cell.reset();
@@ -194,8 +208,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_removes_bit_16() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     assert_eq!(cell.remove_option_at_position(1, 1), false);        // Remove option bit = 16 -> not last option
     assert_eq!(cell.total_options_remaining, 8);
@@ -203,8 +218,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_already_has_bit_16_removed() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous test
 
@@ -214,8 +230,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_removes_bits_1_2_4() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
 
@@ -234,8 +251,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_does_not_contain_bit_2() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
     cell.remove_options(7);
@@ -248,8 +266,9 @@ mod cell_3x3 {
   
   #[test]
   fn it_removes_options_per_row() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
     cell.remove_options(7);
@@ -261,8 +280,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_does_not_remove_options() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
     cell.remove_options(7);
@@ -274,8 +294,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_removes_bottom_row() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
     cell.remove_options(7);
@@ -290,8 +311,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_removes_bit_32_leaving_bit_8() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
     cell.remove_options(7);
@@ -309,8 +331,9 @@ mod cell_3x3 {
 
   #[test]
   fn it_is_solved() {
-    let dimensions = &Dimensions::new(3, 3);
-    let mut cell = Cell::new(dimensions, 0, 0);
+    let max_columns = 3;
+    let max_rows = 3;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
 
     cell.remove_option_at_position(1, 1);                           // Continue from previous tests
     cell.remove_options(7);

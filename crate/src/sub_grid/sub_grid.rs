@@ -1,21 +1,22 @@
 use std::fmt::{self, Display};
-use crate::cell::{cell::Cell, dimensions::Dimensions, SetMethod, OptionsRemaining};
+use crate::cell::{cell::Cell, SetMethod, OptionsRemaining};
 use crate::sub_grid::{BitOption, StruckOutCell, StruckOutCells};
 
 #[derive(Debug)]
-pub struct SubGrid<'a> {
-  dimensions: &'a Dimensions,
+pub struct SubGrid {
+  max_columns: usize,
+  max_rows: usize,
 
   pub column: usize,
   pub row: usize,
-  pub cells: Vec<Vec<Cell<'a>>>                                     // use get(column, row) -> returns cells[row][column]
+  cells: Vec<Vec<Cell>>                                             // use get(column, row) -> returns cells[row][column]
 }
 
-impl Display for SubGrid<'_> {
-  fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-    fn add_separator_line(output: &mut String, dimensions: &Dimensions) {
+impl Display for SubGrid {
+  fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    fn add_separator_line(output: &mut String, max_columns: usize, max_rows: usize) {
       // All left aligned padding '-' to ''
-      fmt::write(output, format_args!("{:-<1$}", "", (dimensions.total + 1) * dimensions.columns - 1))
+      fmt::write(output, format_args!("{:-<1$}", "", (max_columns * max_rows + 1) * max_columns - 1))
         .expect("Error adding separator line in sub-grid");
     }
 
@@ -26,12 +27,12 @@ impl Display for SubGrid<'_> {
     let mut output = String::new();
 
     if formatter.alternate() {
-      add_separator_line(&mut output, self.dimensions);
+      add_separator_line(&mut output, self.max_columns, self.max_rows);
       add_new_line(&mut output);
     }
 
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         if formatter.alternate() {
           fmt::write(&mut output, format_args!("{:#} ", self.cells[row][column]))
             .expect("Error writing cell in sub-grid");
@@ -43,7 +44,7 @@ impl Display for SubGrid<'_> {
     }
 
     if formatter.alternate() {
-      add_separator_line(&mut output, self.dimensions);
+      add_separator_line(&mut output, self.max_columns, self.max_rows);
     } else {
       output.pop();                                                 // Remove last new line
     }
@@ -52,20 +53,20 @@ impl Display for SubGrid<'_> {
   }
 }
 
-impl<'a> SubGrid<'a> {
-  pub fn new(dimensions: &'a Dimensions, column: usize, row: usize) -> Self {
-    let mut cells: Vec<Vec<Cell>> = Vec::with_capacity(dimensions.rows);
+impl SubGrid {
+  pub fn new(max_columns: usize, max_rows: usize, column: usize, row: usize) -> Self {
+    let mut cells: Vec<Vec<Cell>> = Vec::with_capacity(max_rows);
 
-    for row in 0..dimensions.rows {
-      cells.push(Vec::with_capacity(dimensions.columns));
-      let swopped = dimensions.swop();
-      for column in 0..dimensions.columns {
-        cells[row].push(Cell::new(swopped, column, row));
+    for row in 0..max_rows {
+      cells.push(Vec::with_capacity(max_columns));
+      for column in 0..max_columns {
+        cells[row].push(Cell::new(max_rows, max_columns, column, row)); // max columns and rows swopped
       }
     }
   
     SubGrid {
-      dimensions,
+      max_columns,
+      max_rows,
       column,
       row,
       cells
@@ -73,23 +74,28 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn reset(&mut self) {
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         self.cells[row][column].reset();
       }
     }
   }
 
-  pub fn get2(&mut self, column: usize, row: usize) -> &'a mut Cell {
+  pub fn get(&mut self, column: usize, row: usize) -> Cell {
     // grids called by [column, row] but accessed by [row][column] for efficiency
-    &mut self.cells[row][column]
+    self.cells[row][column]
   }
 
-  pub fn available_options_row(&self) -> Vec<u64> {
-    let mut options_row = Vec::with_capacity(self.dimensions.total);
+  // pub fn get_mut(&mut self, column: usize, row: usize) -> Cell {
+  //   // grids called by [column, row] but accessed by [row][column] for efficiency
+  //   self.cells[row][column]
+  // }
 
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+  pub fn available_options_row(&self) -> Vec<u64> {
+    let mut options_row = Vec::with_capacity(self.max_columns * self.max_rows);
+
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         options_row.push(self.cells[row][column].options);
       }
     }
@@ -98,10 +104,10 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn get_options_remaining(&self) -> Vec<OptionsRemaining> {
-    let mut options_row = Vec::with_capacity(self.dimensions.total);
+    let mut options_row = Vec::with_capacity(self.max_columns * self.max_rows);
 
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         options_row.push(self.cells[row][column].get_options_remaining());
       }
     }
@@ -110,9 +116,9 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn set_options_remaining(&mut self, options: &Vec<OptionsRemaining>) {
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
-        self.cells[row][column].set_options_remaining(&options[row * self.dimensions.columns + column]);
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
+        self.cells[row][column].set_options_remaining(&options[row * self.max_columns + column]);
       }
     }
   }
@@ -181,10 +187,10 @@ impl<'a> SubGrid<'a> {
 
   pub fn compare(&self, items: &Vec<Vec<Cell>>) -> bool {
     let mut equal = true;
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while equal && row > 0 {
       row -= 1;
-      let mut column = self.dimensions.columns;
+      let mut column = self.max_columns;
       while equal && column > 0 {
         column -= 1;
         equal = self.cells[row][column].equal(&items[row][column]);
@@ -196,10 +202,10 @@ impl<'a> SubGrid<'a> {
 
   pub fn compare_ref(&self, items: &Vec<Vec<&Cell>>) -> bool {
     let mut equal = true;
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while equal && row > 0 {
       row -= 1;
-      let mut column = self.dimensions.columns;
+      let mut column = self.max_columns;
       while equal && column > 0 {
         column -= 1;
         equal = self.cells[row][column].equal(&items[row][column]);
@@ -214,10 +220,10 @@ impl<'a> SubGrid<'a> {
     while changed {
       changed = false;
 
-      let mut row = self.dimensions.rows;
+      let mut row = self.max_rows;
       while !changed && row > 0 {
         row -= 1;
-        let mut column = self.dimensions.columns;
+        let mut column = self.max_columns;
         while !changed && column > 0 {
           column -= 1;
           changed =
@@ -231,10 +237,10 @@ impl<'a> SubGrid<'a> {
   pub fn solved(&self) -> bool {
     let mut solved = true;
 
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while solved && row > 0 {
       row -= 1;
-      let mut column = self.dimensions.columns;
+      let mut column = self.max_columns;
       while solved && column > 0 {
         column -= 1;
         solved = self.cells[row][column].solved();
@@ -245,11 +251,11 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn get_available_options_matrix(&self) -> Vec<Vec<u64>> {
-    let mut matrix = Vec::with_capacity(self.dimensions.rows - 1);
+    let mut matrix = Vec::with_capacity(self.max_rows - 1);
 
-    for row in 0..self.dimensions.rows {
-      let mut matrix_row = Vec::with_capacity(self.dimensions.columns - 1);
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      let mut matrix_row = Vec::with_capacity(self.max_columns - 1);
+      for column in 0..self.max_columns {
         matrix_row.push(self.cells[row][column].options);
       }
       matrix.push(matrix_row);
@@ -259,12 +265,12 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn get_cells_matrix(&self) -> Vec<Vec<&Cell>> {
-    let mut matrix: Vec<Vec<&Cell>> = Vec::with_capacity(self.dimensions.rows);
+    let mut matrix: Vec<Vec<&Cell>> = Vec::with_capacity(self.max_rows);
 
-    for row in 0..self.dimensions.rows {
-      matrix.push(Vec::with_capacity(self.dimensions.columns));
+    for row in 0..self.max_rows {
+      matrix.push(Vec::with_capacity(self.max_columns));
 
-      for column in 0..self.dimensions.columns {
+      for column in 0..self.max_columns {
         matrix[row].push(&self.cells[row][column]);
       }
     }
@@ -275,8 +281,8 @@ impl<'a> SubGrid<'a> {
   pub fn get_unset_cells(&self) -> Vec<Cell> {
     let mut unset_cells = Vec::new();
 
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         if self.cells[row][column].set_method == SetMethod::Unset {
           unset_cells.push(self.cells[row][column]);                // Set copy of cell
         }
@@ -313,10 +319,10 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn get_available_options(&self) -> Vec<u64> {
-    let mut array = Vec::with_capacity(self.dimensions.total);
+    let mut array = Vec::with_capacity(self.max_columns * self.max_rows);
     
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         array.push(self.cells[row][column].options);
       }
     }
@@ -334,9 +340,9 @@ impl<'a> SubGrid<'a> {
     let mut struck_out_cells = StruckOutCells::new();
 
     let mut column;
-    let mut row = self.dimensions.rows - 1;
+    let mut row = self.max_rows - 1;
     while row > cell_row {
-      column = self.dimensions.columns;
+      column = self.max_columns;
       while column > 0 {
         column -= 1;
         struck_out_cells.add(self.get_struck_out_cell(column, row, option));
@@ -344,7 +350,7 @@ impl<'a> SubGrid<'a> {
       row -= 1;
     }
 
-    let mut column = self.dimensions.columns - 1;
+    let mut column = self.max_columns - 1;
     while column > cell_column {
       struck_out_cells.add(self.get_struck_out_cell(column, row, option));
       column -= 1;
@@ -357,7 +363,7 @@ impl<'a> SubGrid<'a> {
 
     while row > 0 {
       row -= 1;
-      column = self.dimensions.columns;
+      column = self.max_columns;
       while column > 0 {
         column -= 1;
         struck_out_cells.add(self.get_struck_out_cell(column, row, option));
@@ -420,7 +426,7 @@ impl<'a> SubGrid<'a> {
   pub fn remove_options_from_column(&mut self, cell_column: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
-    for row in 0..self.dimensions.rows {
+    for row in 0..self.max_rows {
       if self.cells[row][cell_column].remove_options(options) {
         last_options.push(BitOption {
           sub_grid_column: self.column,
@@ -438,7 +444,7 @@ impl<'a> SubGrid<'a> {
   pub fn remove_options_from_row(&mut self, cell_row: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
-    for column in 0..self.dimensions.columns {
+    for column in 0..self.max_columns {
       if self.cells[cell_row][column].remove_options(options) {
         last_options.push(BitOption {
           sub_grid_column: self.column,
@@ -457,9 +463,9 @@ impl<'a> SubGrid<'a> {
     let mut last_options = Vec::new();
 
     let mut row: usize;
-    let mut column = self.dimensions.columns - 1;
+    let mut column = self.max_columns - 1;
     while column > exclude_column {
-      row = self.dimensions.rows;
+      row = self.max_rows;
       while row > 0 {
         row -= 1;
         if self.cells[row][column].remove_options(options) {
@@ -477,7 +483,7 @@ impl<'a> SubGrid<'a> {
 
     while column > 0 {
       column -= 1;
-      row = self.dimensions.rows;
+      row = self.max_rows;
       while row > 0 {
         row -= 1;
         if self.cells[row][column].remove_options(options) {
@@ -499,9 +505,9 @@ impl<'a> SubGrid<'a> {
     let mut last_options = Vec::new();
 
     let mut column: usize;
-    let mut row = self.dimensions.rows - 1;
+    let mut row = self.max_rows - 1;
     while row > exclude_row {
-      column = self.dimensions.columns;
+      column = self.max_columns;
       while column > 0 {
         column -= 1;
         if self.cells[row][column].remove_options(options) {
@@ -519,7 +525,7 @@ impl<'a> SubGrid<'a> {
 
     while row > 0 {
       row -= 1;
-      column = self.dimensions.columns;
+      column = self.max_columns;
       while column > 0 {
         column -= 1;
         if self.cells[row][column].remove_options(options) {
@@ -540,7 +546,7 @@ impl<'a> SubGrid<'a> {
   pub fn remove_if_extra_options_from_column(&mut self, column: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
-    for row in 0..self.dimensions.rows {
+    for row in 0..self.max_rows {
       if self.cells[row][column].remove_options(options) {
         last_options.push(BitOption {
           sub_grid_column: self.column,
@@ -558,7 +564,7 @@ impl<'a> SubGrid<'a> {
   pub fn remove_if_extra_options_from_row(&mut self, row: usize, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
-    for column in 0..self.dimensions.columns {
+    for column in 0..self.max_columns {
       if self.cells[row][column].remove_options(options) {
         last_options.push(BitOption {
           sub_grid_column: self.column,
@@ -576,8 +582,8 @@ impl<'a> SubGrid<'a> {
   pub fn remove_if_extra_options(&mut self, options: u64) -> Vec<BitOption> {
     let mut last_options = Vec::new();
 
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         if self.cells[row][column].remove_options(options) {
           last_options.push(BitOption {
             sub_grid_column: self.column,
@@ -595,7 +601,7 @@ impl<'a> SubGrid<'a> {
 
   pub fn option_exists_in_column(&self, column: usize, option: u64) -> bool {
     let mut found = false;
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while !found && row > 0 {
       row -= 1;
       found = self.cells[row][column].contains_option(option);
@@ -606,7 +612,7 @@ impl<'a> SubGrid<'a> {
 
   pub fn option_exists_in_row(&self, row: usize, option: u64) -> bool {
     let mut found = false;
-    let mut column = self.dimensions.columns;
+    let mut column = self.max_columns;
     while !found && column > 0 {
       column -= 1;
       found = self.cells[row][column].contains_option(option);
@@ -618,7 +624,7 @@ impl<'a> SubGrid<'a> {
   pub fn option_removed_from_column(&self, cell_column: usize, cell_row: usize, option: u64) -> bool {
     // Check if option removed from column
     let mut option_found = false;
-    let mut row = self.dimensions.rows;
+    let mut row = self.max_rows;
     while !option_found && row > cell_row + 1 {
       row -= 1;
       option_found = (self.cells[row][cell_column].options & option) > 0;
@@ -636,7 +642,7 @@ impl<'a> SubGrid<'a> {
   pub fn option_removed_from_row(&self, cell_column: usize, cell_row: usize, removed_option: u64) -> bool {
     // Check if option removed from row
     let mut option_found = false;
-    let mut column = self.dimensions.columns;
+    let mut column = self.max_columns;
     while !option_found && column > cell_column + 1 {
       column -= 1;
       option_found = (self.cells[cell_row][column].options & removed_option) > 0;
@@ -652,8 +658,8 @@ impl<'a> SubGrid<'a> {
   }
 
   pub fn set_cells(&self, _sub_grid: Vec<Vec<Cell>>) {
-    for _row in 0..self.dimensions.rows {
-      for _column in 0..self.dimensions.columns {
+    for _row in 0..self.max_rows {
+      for _column in 0..self.max_columns {
         // self.cells[row][column] = Cell::new(sub_grid[row][column]); -> set using copy letructor ?
       }
     }
@@ -661,8 +667,8 @@ impl<'a> SubGrid<'a> {
 
   pub fn load(&mut self, symbol_positions: &Vec<u64>) {
     let mut symbol_pos_iter = symbol_positions.iter();
-    for row in 0..self.dimensions.rows {
-      for column in 0..self.dimensions.columns {
+    for row in 0..self.max_rows {
+      for column in 0..self.max_columns {
         match symbol_pos_iter.next() {
           None => {},
           Some(0) => {},

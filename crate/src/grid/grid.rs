@@ -6,14 +6,14 @@ use crate::sub_grid::{sub_grid::SubGrid, BitOption};
 use crate::grid::CellOptions;
 use crate::utils::array_utils;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Grid {
   max_columns: usize,
   max_rows: usize,
   max_options: usize,
   combinations: Combinations,
   
-  sub_grids: Vec<Vec<SubGrid>>,                                     // use get(column, row) -> returns sub-grids[row][column]
+  sub_grids: Vec<Vec<SubGrid>>                                      // use get(column, row) -> returns sub-grids[row][column]
 }
 
 impl Display for Grid {
@@ -92,7 +92,7 @@ impl Grid {
     options_rows
   }
 
-  pub fn get_options_remaining(&self) -> Vec<Vec<OptionsRemaining>> {
+  fn get_options_remaining(&self) -> Vec<Vec<OptionsRemaining>> {
     let mut options_remaining = Vec::with_capacity(self.max_options);
     for row in 0..self.max_rows {
       for column in 0..self.max_columns {
@@ -110,7 +110,7 @@ impl Grid {
       }
     }
   }
-  
+
   pub fn solve(&mut self) -> bool {
     // Repeat while an only option found or an option removed
     let mut eliminated = true;
@@ -196,18 +196,38 @@ impl Grid {
   }
 
   fn is_valid(&self) -> bool {
-    // let valid =
-    //   self.matrixValid(self.get_transposed_cells_matrix()) &&
-    //   self.matrixValid(self.get_cells_matrix()); // Check columns and rows contain all options and no set cell duplicted
-
-    // return valid;
-
-    false
+    // Check columns and rows contain all options and no set cell duplicted
+    self.matrix_valid(self.get_transposed_cells_matrix()) && self.matrix_valid(self.get_cells_matrix())
   }
 
-  fn eliminate(&mut self) -> bool {
-    let save = self.get_options_remaining();                       // Save current state
+  fn matrix_valid(&self, matrix: Vec<Vec<&Cell>>) -> bool {
+    let mut valid = true;
+    
+		let mut index = self.max_options;
+		while valid && index > 0 {
+      index -= 1;
+      valid = self.contains_each_option_once(&matrix[index]);
+    }
 
+		valid
+  }
+  
+  fn contains_each_option_once(&self, cells: &Vec<&Cell>) -> bool {
+    let mut valid = true;
+    let mut options_total = 0;
+    
+    let mut index = self.max_options;
+		while valid && index > 0 {
+      index -= 1;
+
+      valid = options_total & cells[index].options == 0;            // Ensure not previously added
+      options_total += cells[index].options;
+    }
+
+    valid
+  }
+  
+  fn eliminate(&mut self) -> bool {
     let mut valid = true;
     let mut total_unset_options = 2;
     while valid && total_unset_options <= self.max_options {
@@ -222,14 +242,13 @@ impl Grid {
             index -= 1;
             let cell = &unset_cells[index];
             
-            valid = self.find_invalid_option(
-              column_pos - 1,
-              row_pos - 1,
-              cell.column,
-              cell.row,
-              cell.options,
-              &save
-            );
+            valid = match self.find_invalid_option(column_pos - 1, row_pos - 1, cell.column, cell.row, cell.options) {
+              Some(option) => {
+                self.remove_option(column_pos - 1, row_pos - 1, cell.column, cell.row, option);
+                false
+              },
+              None => true
+            };
           }
 
           if column_pos > 0 {
@@ -244,7 +263,6 @@ impl Grid {
 
       total_unset_options += 1;
     }
-
 
     !valid                                                          // Option removed?
   }
@@ -277,35 +295,35 @@ impl Grid {
   }
 
   fn find_invalid_option(
-    &mut self,
+    &self,
     sub_grid_column: usize,
     sub_grid_row: usize,
     cell_column: usize,
     cell_row: usize,
-    options: u64,
-    reset_cells: &Vec<Vec<OptionsRemaining>>
-  ) -> bool {
+    options: u64
+  ) -> Option<u64> {
+    let mut copy = self.clone();
+
     let mut valid = true;
     let mut remaining_options = options;
     let mut try_option = remaining_options & !(remaining_options - 1);  // lowest set bit value
 
-    while try_option > 0 && valid {
-      self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, try_option, SetMethod::Calculated);
-      self.solve();
-      valid = self.is_valid();
+    while remaining_options > 0 && valid {
+      copy.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, try_option, SetMethod::Calculated);
+      copy.solve();
+      valid = copy.is_valid();
 
-      self.set_options_remaining(reset_cells);                      // reset
-
-      if valid {
-        remaining_options -= try_option;                            // remove tried option
+      remaining_options -= try_option;                            // remove tried option
+      if valid && remaining_options > 0 {
         try_option = remaining_options & !(remaining_options - 1);
-      } else {
-        // Remove try_option i.e. resulted in an invalid state
-        self.remove_option(sub_grid_column, sub_grid_row, cell_column, cell_row, try_option);
       }
     }
 
-    valid
+    if !valid {                                                     // try_option resulted in an invalid state
+      return Some(try_option);
+    }
+
+    None
   }
 
   pub fn strike_out(
@@ -378,21 +396,7 @@ impl Grid {
       );
     }
   }
-/*  
-  public isStruckOut(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    symbol: string
-  ): bool {
-    return self.sub_grids[sub_grid_row][sub_grid_column].isStruckOut(
-      cell_column,
-      cell_row,
-      symbol
-    );
-  }
-*/
+
   pub fn fix_by_position(
     &mut self,
     sub_grid_column: usize,
@@ -479,260 +483,6 @@ impl Grid {
       .flat_map(|x| x.iter().map(|&x| x  as usize)).collect()
   }
 
-/*
-  public setByPositionShallow(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    option_column: usize,
-    option_row: usize,
-    set_method: SetMethod = SetMethod.user
-  ) {
-    if (
-      self.sub_grids[sub_grid_row][sub_grid_column].set_by_position(
-        cell_column,
-        cell_row,
-        option_column,
-        option_row,
-        set_method
-      )
-    ) {
-      // self.total_set++;
-    }
-  }
-
-  public toggleStrikeOutAtPositionShallow(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    option_column: usize,
-    option_row: usize
-  ) {
-    const cell: ICell = self.sub_grids[sub_grid_row][sub_grid_column].get(
-      cell_column,
-      cell_row
-    );
-    cell.toggleRemoveOptionAtPositionShallow(option_column, option_row);
-  }
-
-  public togglePencilInAtPositionShallow(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    option_column: usize,
-    option_row: usize
-  ) {
-    const cell: ICell = self.sub_grids[sub_grid_row][sub_grid_column].get(
-      cell_column,
-      cell_row
-    );
-    cell.toggleHighlightOptionAtPosition(option_column, option_row);
-  }
-
-  public fixByOptions(fixedOptions: usize[]) {
-    for (let sub_grid_row: usize = 0; sub_grid_row < self.max_rows; sub_grid_row++) {
-      for (
-        let sub_grid_column: usize = 0;
-        sub_grid_column < self.max_columns;
-        sub_grid_column++
-      ) {
-        for (let cell_row: usize = 0; cell_row < self.max_columns; cell_row++) {
-          for (
-            let cell_column: usize = 0;
-            cell_column < self.max_rows;
-            cell_column++
-          ) {
-            const option =
-              fixedOptions[
-                (sub_grid_row * self.max_columns + cell_row) *
-                  self.max_columns *
-                  self.max_rows +
-                  sub_grid_column * self.max_rows +
-                  cell_column
-              ];
-            if (option) {
-              self.sub_grids[sub_grid_row][sub_grid_column]
-                .get(cell_column, cell_row)
-                .setByOption(option, SetMethod.loaded);
-              self.strike_out(
-                sub_grid_column,
-                sub_grid_row,
-                cell_column,
-                cell_row,
-                option
-              );
-            }
-          }
-        }
-      }
-    }
-  }
-
-  public fixByCsv(options: string) {
-    let option: u64;
-    for (let sub_grid_row: usize = 0; sub_grid_row < self.max_rows; sub_grid_row++) {
-      for (
-        let sub_grid_column: usize = 0;
-        sub_grid_column < self.max_columns;
-        sub_grid_column++
-      ) {
-        for (let cell_row: usize = 0; cell_row < self.max_columns; cell_row++) {
-          for (
-            let cell_column: usize = 0;
-            cell_column < self.max_rows;
-            cell_column++
-          ) {
-            //                int.TryParse(options.Substring((sub_grid_row * columns + cell_row) * columns * rows + sub_grid_column * rows + cell_column, 1), out option);
-            if (option) {
-              option = 1 << (option - 1);
-              self.sub_grids[sub_grid_row][sub_grid_column]
-                .get(cell_column, cell_row)
-                .setByOption(option, SetMethod.loaded);
-              self.strike_out(
-                sub_grid_column,
-                sub_grid_row,
-                cell_column,
-                cell_row,
-                option
-              );
-            }
-          }
-        }
-      }
-    }
-  }
-
-  public unfix(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize
-  ) {
-    self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row).reset();
-
-    const fixedCells: usize[] = [];
-    const cells: ICell[] = self.getCellsArray();
-    for (let index: usize = 0; index < cells.len(); index--) {
-      fixedCells.push(
-        cells[index].set_method === SetMethod.loaded ||
-          cells[index].set_method === SetMethod.user
-          ? cells[index].options
-          : 0
-      ); // Get fixed cells i.e. 0, 0, 0, 8, 4, 0, 0, 1, ...
-    }
-
-    self.reset();
-    self.fixByOptions(fixedCells);
-    self.solve();
-  }
-
-  fn getCellsArray(): ICell[] {
-    let array: ICell[] = [];
-
-    let sub_grid_row: usize = self.max_rows;
-    while (sub_grid_row--) {
-      let sub_grid_column: usize = self.max_columns;
-      while (sub_grid_column--) {
-        let sub_matrix = self.sub_grids[sub_grid_row][
-          sub_grid_column
-        ].get_cells_matrix();
-
-        let cell_column: usize = self.max_rows;
-        while (cell_column--) {
-          let cell_row: usize = self.max_columns;
-          while (cell_row--) {
-            array[
-              (sub_grid_row * self.max_columns + cell_row) * self.max_columns * self.max_rows +
-                sub_grid_column * self.max_rows +
-                cell_column
-            ] = sub_matrix[cell_row][cell_column];
-          }
-        }
-      }
-    }
-
-    return array;
-  }
-
-  // Remove option from the other sub grid's columns / rows when the option must belong in a specific sub grid's column / row
-  public removeUnavailableOptionsAtPosition(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    option_column: usize,
-    option_row: usize
-  ): bool {
-    return self.removeUnavailableOptions(
-      sub_grid_column,
-      sub_grid_row,
-      cell_column,
-      cell_row,
-      1 << (self.max_columns * option_row + option_column)
-    );
-  }
-
-  fn removeUnavailableOptions(
-    sub_grid_column: usize,
-    sub_grid_row: usize,
-    cell_column: usize,
-    cell_row: usize,
-    option: u64
-  ): bool {
-    let last_options: IOption[] = [];
-
-    // Check sub grid's column and if found remove option from other columns
-    if (
-      self.sub_grids[sub_grid_row][sub_grid_column].optionRemovedFromColumn(
-        cell_column,
-        cell_row,
-        option
-      )
-    ) {
-      last_options = self.removeOptionFromOtherColumns(
-        sub_grid_column,
-        sub_grid_row,
-        cell_column,
-        option
-      );
-    }
-
-    // Check sub grid's row and if found remove option from other rows
-    if (
-      self.sub_grids[sub_grid_row][sub_grid_column].optionRemovedFromRow(
-        cell_column,
-        cell_row,
-        option
-      )
-    ) {
-      last_options = self.removeOptionFromOtherRows(
-        sub_grid_column,
-        sub_grid_row,
-        cell_row,
-        option
-      );
-    }
-
-    let last_option: IOption;
-    let index: usize = last_options.len();
-    while index > 0 {
-      index -= 1;
-      last_option = last_options[index];
-      self.strike_out(
-        last_option.sub_grid_column,
-        last_option.sub_grid_row,
-        last_option.cell_column,
-        last_option.cell_row,
-        last_option.bits
-      );
-    }
-
-    return last_options !== null;
-  }
-*/
   // Check for mulitipe options limited to a certain number of related cells i.e. 2 cells in a row can only contain 1 or 2 => remove from other cells in row
   fn check_limited_options(&mut self) -> bool {
     let mut limited_options = self.find_options_limited_to_matrix(self.get_transposed_cells_matrix());  // Columns

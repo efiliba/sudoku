@@ -2,7 +2,7 @@ use std::fmt::{self, Display};
 use crate::cell::{cell::Cell, SetMethod, OptionsRemaining};
 use crate::sub_grid::{BitOption, StruckOutCell, StruckOutCells};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubGrid {
   max_columns: usize,
   max_rows: usize,

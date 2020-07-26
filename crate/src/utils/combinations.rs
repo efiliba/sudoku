@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Combinations {                                           // C(n, r) = n! / r!(n-r)!
   set_bits_lookup_table: Vec<Vec<usize>>
 }

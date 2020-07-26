@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod cell {
-  use crate::cell::cell::Cell;
+  use crate::cell::{cell::Cell, SetMethod};
 
   #[test]
   fn it_contains_option_at_position() {
@@ -19,6 +19,20 @@ mod cell {
     assert!(cell.contains_option_at_position(3, 1));
     assert_eq!(cell.contains_option_at_position(4, 1), false);      // No bit set - overflow
     assert_eq!(cell.contains_option_at_position(0, 2), false);
+  }
+
+  #[test]
+  fn it_can_remove_an_option() {
+    let max_columns = 2;
+    let max_rows = 1;
+    let mut cell = Cell::new(max_columns, max_rows, 0, 0);
+
+    let only_option_left = cell.remove_option(1);                   // Remove option 1, leaving option 2 (only)
+
+    assert!(only_option_left);
+    assert_eq!(cell.total_options_remaining, 1);
+    assert_eq!(cell.set_method, SetMethod::Calculated);
+    assert_eq!(cell.options, 2);                                    // Remaining options
   }
 }
 

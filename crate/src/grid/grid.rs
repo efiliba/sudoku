@@ -64,11 +64,6 @@ impl Grid {
     // sub-grids called by [column, row] but accessed by [row][column] for efficiency
     &self.sub_grids[row][column]
   } 
-
-  // pub fn get_mut(&mut self, column: usize, row: usize) -> &mut SubGrid {
-  //   // sub-grids called by [column, row] but accessed by [row][column] for efficiency
-  //   &mut self.sub_grids[row][column]
-  // } 
   
   pub fn compare(&self, items: &Vec<Vec<SubGrid>>) -> bool {
     let mut equal = true;
@@ -115,57 +110,15 @@ impl Grid {
       }
     }
   }
-
-  // pub fn available_options_rows(&self) -> Vec<Vec<usize>> {
-  //   let mut options_rows = Vec::with_capacity(self.max_rows);
-  //   for row in 0..self.max_rows {
-  //     let mut options_row = Vec::with_capacity(self.max_columns);
-  //     for column in 0..self.max_columns {
-  //       options_row.extend(self.sub_grids[row][column].available_options_row());
-  //     }
-  //     options_rows.push(options_row);
-  //   }
-
-  //   options_rows
-  // }
-
-  // strike out cells after loading options instead of striking out when setting
-  // cannot borrow `*self` as mutable because it is also borrowed as immutable
-  // pub fn strike_out_from_set_cells(&mut self) {
-	// 	for sub_grid_row in 0..self.max_rows {
-	// 		for sub_grid_column in 0..self.max_columns {
-	// 			let sub_grid = &self.sub_grids[sub_grid_row][sub_grid_column];
-	// 			for cell_row in 0..self.max_columns {
-	// 				for cell_column in 0..self.max_rows {
-	// 					let cell = sub_grid.get(cell_column, cell_row);
-	// 					if cell.set_method != SetMethod::Unset {                // cell set i.e. != SetMethod.unset
-	// 						self.strike_out(sub_grid_column, sub_grid_row, cell_column, cell_row, cell.options);
-	// 					}
-	// 				}
-	// 			}
-  //     }
-	// 	}
-  // }
   
   pub fn solve(&mut self) -> bool {
-    // while self.simplify() {
-    // }
-    // self.eliminate();
-    
-    // println!("DONE");
-    // println!("{:#}", self);
-
     // Repeat while an only option found or an option removed
     let mut eliminated = true;
     while eliminated {
       while self.simplify() {
       }
 		  eliminated = self.eliminate();                                // Restart simplify -> eliminate loop
-      println!("eliminated: {}", eliminated);
-      println!("{:#}", self);
     }
-
-    println!("DONE");
 
     self.solved()
   }
@@ -199,7 +152,7 @@ impl Grid {
   }
 
   
-  fn remove_option(
+  pub fn remove_option(
     &mut self,
     sub_grid_column: usize,
     sub_grid_row: usize,
@@ -207,39 +160,15 @@ impl Grid {
     cell_row: usize,
     option: u64
   ) -> bool {
-    // let cell: &mut Cell = self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
-    // let mut sub_grid = self.get_mut(sub_grid_column, sub_grid_row);
-    let mut cell = self.sub_grids[sub_grid_row][sub_grid_column].get(cell_column, cell_row);
-    println!("remove_option 2 from 10, but total_options_remaining is 1 {:?}", cell);
-
-    println!("Before: (remove: {}) {:#}\n\n{:#}", option, cell, self);
-
-    // {column: 2, row: 1, setMethod: null, options: 10, setColumn: -1, setRow: -1, totalOptionsRemaining: 2}
-    if cell.remove_option(option) {
+    if self.sub_grids[sub_grid_row][sub_grid_column].cells[cell_row][cell_column].remove_option(option) {
       // Check if last option left
-
-      // option removed from cell, but not self
-
-    println!("After: {:#}\n\n{:#}", cell, self);
-
-      // println!("before:\n{:#}", self);
-      println!("{} {} {} {} {}",
-        sub_grid_column,
-        sub_grid_row,
-        cell_column,
-        cell_row,
-        cell.options
-      );
-
       self.strike_out(
         sub_grid_column,
         sub_grid_row,
         cell_column,
         cell_row,
-        cell.options
+        self.sub_grids[sub_grid_row][sub_grid_column].cells[cell_row][cell_column].options
       );
-
-      println!("after:\n{:#}", self);
 
       return true;
     }
@@ -372,10 +301,7 @@ impl Grid {
         try_option = remaining_options & !(remaining_options - 1);
       } else {
         // Remove try_option i.e. resulted in an invalid state
-
-        println!("PRE invalid bit found: (remove {})\n{:#}", try_option, self);
         self.remove_option(sub_grid_column, sub_grid_row, cell_column, cell_row, try_option);
-        println!("POST:\n{:#}", self);
       }
     }
 

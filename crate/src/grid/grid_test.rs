@@ -20,6 +20,24 @@ mod grid {
   use crate::grid::grid::Grid;
 
   #[test]
+  fn it_can_remove_an_option() {
+    let columns = 2;                                                // [ 1 | 2 ] | [ 1 | 2 ]         2  |  1
+    let rows = 1;                                                   // ----------|----------  ->   -----|-----
+    let mut grid = Grid::new(columns, rows);                        // [ 1 | 2 ] | [ 1 | 2 ]         1  |  2
+
+    let only_option_left = grid.remove_option(0, 0, 0, 0, 1);       // Remove option 1 from top left, leaving option 2 (only)
+    assert!(only_option_left);
+
+    let mut expected_sub_grids = super::init_sub_grids(columns, rows);
+    expected_sub_grids[0][0].set_by_option(0, 0, 2, SetMethod::User);
+    expected_sub_grids[0][0].set_by_option(0, 1, 1, SetMethod::User);
+    expected_sub_grids[0][1].set_by_option(0, 0, 1, SetMethod::User);
+    expected_sub_grids[0][1].set_by_option(0, 1, 2, SetMethod::User);
+
+    assert!(grid.compare(&expected_sub_grids));
+  }
+
+  #[test]
   fn it_solves_a_2x1_grid() {
     let columns = 2;
     let rows = 1;
@@ -28,7 +46,7 @@ mod grid {
 
     grid.set_by_option(0, 0, 0, 0, 1, SetMethod::Loaded);           // Set top left cell to 1
 
-    assert!(grid.solve());
+    assert!(grid.solved());
   }
 
   #[test]
@@ -283,6 +301,7 @@ mod grid_3x2 {
   use crate::grid::grid::Grid;
 
   #[test]
+  #[ignore]
   fn it_solves_a_2x3_grid() {
 
     // TODO

@@ -40,9 +40,6 @@ impl Cell {
   }
 
   pub fn reset(&mut self) {
-    // this.setColumn = -1;
-    // this.setRow = -1;
-
     self.set_method = SetMethod::Unset;
     self.total_options_remaining = self.max_cells;
     self.options = (1 << self.max_cells) - 1; // Set all bits
@@ -83,7 +80,6 @@ impl Cell {
       self.options &= !bit;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
-        // self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       }
@@ -101,7 +97,6 @@ impl Cell {
       self.options &= !option;
       self.total_options_remaining -= 1;
       if self.total_options_remaining == 1 {
-        // self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       }
@@ -120,7 +115,6 @@ impl Cell {
       self.total_options_remaining -= number_of_bits_set(remove_options);
 
       if self.total_options_remaining == 1 {
-        // self.set_remaining_option(self.options);                    // Set last remaining option's column and row
         self.set_method = SetMethod::Calculated;
         last_option_found = true;
       } else {
@@ -136,12 +130,12 @@ impl Cell {
 
   pub fn set_by_position(&mut self, column: usize, row: usize, set_method: SetMethod) {
     self.set_method = set_method;
-    self.clear_all_except_at_position(column, row, self.set_method);
+    self.clear_all_except_at_position(column, row);
   }
 
   pub fn set_by_index(&mut self, index: usize, set_method: SetMethod) {
     self.set_method = set_method;
-    self.clear_all_except_at_position(index % self.max_columns, index / self.max_columns >> 0, self.set_method);
+    self.clear_all_except_at_position(index % self.max_columns, index / self.max_columns >> 0);
   }
 
   pub fn set_by_option(&mut self, option: u64, set_method: SetMethod) {
@@ -169,11 +163,7 @@ impl Cell {
     self.options & 1 << find_symbol_index(symbol) > 0
   }
 
-  // fn set_remaining_option(&mut self, options: u64) {
-  //   let index = highest_bit_position(options);
-  // }
-
-  fn clear_all_except_at_position(&mut self, column: usize, row: usize, _set_method: SetMethod) {
+  fn clear_all_except_at_position(&mut self, column: usize, row: usize) {
     self.options = 1 << self.max_columns * row + column;
     self.total_options_remaining = 1;
   }
@@ -191,12 +181,6 @@ impl Cell {
 
     removed_options
   }
-
-  //   // Remove options iff cell contains other options
-  //   pub fn removeIfExtraOptions(options: number): bool {
-  //     return this.totalOptionsRemaining > 1 && (this.options & ~options) > 0 && this.removeOptions(options);
-  //   }
-
 }
 
 fn find_symbol_index(symbol: char) -> usize {

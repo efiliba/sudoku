@@ -9,7 +9,7 @@ pub struct SubGrid {
 
   pub column: usize,
   pub row: usize,
-  cells: Vec<Vec<Cell>>                                             // use get(column, row) -> returns cells[row][column]
+  pub cells: Vec<Vec<Cell>>                                         // use get(column, row) -> returns cells[row][column]
 }
 
 impl Display for SubGrid {
@@ -81,15 +81,10 @@ impl SubGrid {
     }
   }
 
-  pub fn get(&mut self, column: usize, row: usize) -> Cell {
+  pub fn get(&mut self, column: usize, row: usize) -> &mut Cell {
     // grids called by [column, row] but accessed by [row][column] for efficiency
-    self.cells[row][column]
+    &mut self.cells[row][column]
   }
-
-  // pub fn get_mut(&mut self, column: usize, row: usize) -> Cell {
-  //   // grids called by [column, row] but accessed by [row][column] for efficiency
-  //   self.cells[row][column]
-  // }
 
   pub fn available_options_row(&self) -> Vec<u64> {
     let mut options_row = Vec::with_capacity(self.max_columns * self.max_rows);

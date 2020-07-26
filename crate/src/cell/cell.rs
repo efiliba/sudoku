@@ -45,11 +45,6 @@ impl Cell {
     self.options = (1 << self.max_cells) - 1; // Set all bits
   }
 
-  pub fn set_options_remaining(&mut self, options_remaining: &OptionsRemaining) {
-    self.options = options_remaining.options;
-    self.total_options_remaining = options_remaining.total_options_remaining;
-  }
-
   pub fn equal(&self, cell: &Cell) -> bool {
     self.options == cell.options
   }
@@ -64,10 +59,6 @@ impl Cell {
     let set_row = index / self.max_columns >> 0;
 
     SYMBOLS[set_row * self.max_columns + set_column]
-  }
-
-  pub fn get_options_remaining(&self) -> OptionsRemaining {
-    OptionsRemaining { options: self.options, total_options_remaining: self.total_options_remaining }
   }
 
   pub fn remove_option_at_position(&mut self, column: usize, row: usize) -> bool {

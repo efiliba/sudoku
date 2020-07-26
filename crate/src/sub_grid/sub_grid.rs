@@ -98,26 +98,6 @@ impl SubGrid {
     options_row
   }
 
-  pub fn get_options_remaining(&self) -> Vec<OptionsRemaining> {
-    let mut options_row = Vec::with_capacity(self.max_columns * self.max_rows);
-
-    for row in 0..self.max_rows {
-      for column in 0..self.max_columns {
-        options_row.push(self.cells[row][column].get_options_remaining());
-      }
-    }
-
-    options_row
-  }
-
-  pub fn set_options_remaining(&mut self, options: &Vec<OptionsRemaining>) {
-    for row in 0..self.max_rows {
-      for column in 0..self.max_columns {
-        self.cells[row][column].set_options_remaining(&options[row * self.max_columns + column]);
-      }
-    }
-  }
-
   pub fn set_by_position(
     &mut self,
     column: usize,

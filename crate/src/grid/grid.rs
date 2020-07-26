@@ -92,25 +92,6 @@ impl Grid {
     options_rows
   }
 
-  fn get_options_remaining(&self) -> Vec<Vec<OptionsRemaining>> {
-    let mut options_remaining = Vec::with_capacity(self.max_options);
-    for row in 0..self.max_rows {
-      for column in 0..self.max_columns {
-        options_remaining.push(self.sub_grids[row][column].get_options_remaining());
-      }
-    }
-
-    options_remaining
-  }
-
-  pub fn set_options_remaining(&mut self, options: &Vec<Vec<OptionsRemaining>>) {
-    for row in 0..self.max_rows {
-      for column in 0..self.max_columns {
-        self.sub_grids[row][column].set_options_remaining(&options[row * self.max_columns + column]);
-      }
-    }
-  }
-
   pub fn solve(&mut self) -> bool {
     // Repeat while an only option found or an option removed
     let mut eliminated = true;

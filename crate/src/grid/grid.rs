@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 use crate::utils::combinations::Combinations;
 use crate::utils::bit_utils::{number_of_bits_set, bitwise_or, only_option, containing_bit_index};
-use crate::cell::{cell::Cell, SetMethod, OptionsRemaining};
+use crate::cell::{cell::Cell, SetMethod};
 use crate::sub_grid::{sub_grid::SubGrid, BitOption};
 use crate::grid::CellOptions;
 use crate::utils::array_utils;

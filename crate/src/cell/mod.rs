@@ -18,8 +18,3 @@ pub enum SetMethod {
   User,
   Calculated
 }
-
-pub struct OptionsRemaining {
-  pub options: u64,
-  pub total_options_remaining: usize
-}

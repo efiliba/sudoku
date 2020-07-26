@@ -1,5 +1,5 @@
 use std::fmt::{self, Display};
-use crate::cell::{cell::Cell, SetMethod, OptionsRemaining};
+use crate::cell::{cell::Cell, SetMethod};
 use crate::sub_grid::{BitOption, StruckOutCell, StruckOutCells};
 
 #[derive(Debug, Clone)]

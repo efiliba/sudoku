@@ -375,13 +375,13 @@ export class Grid implements IGrid {
 			while (valid && row-- > 0) {
 				let column = Grid.columns;
 				while (valid && column-- > 0) {
-					let unsetCells = this.unsetCells(column, row, totalUnsetOptions);	// MUTATION - May reduce column and row indices
-					// column = unsetCells.column;
-					// row = unsetCells.row;
+					const unsetCells = this.unsetCells(column, row, totalUnsetOptions);	// May reduce column and row indices
+					column = unsetCells.column;
+					row = unsetCells.row;
 
-					let index = unsetCells.length;
+					let index = unsetCells.cells.length;
 					while (valid && index-- > 0) {
-						let cell = unsetCells[index];
+						let cell = unsetCells.cells[index];
 
 						let options = cell.options;
 						let cellColumn = cell.getColumn();
@@ -410,10 +410,9 @@ export class Grid implements IGrid {
 		return !valid;                                                  // Option removed?
 	}
 
-	private unsetCells(column: number, row: number, totalUnsetOptions: number): ICell[] {
+	private unsetCells(column: number, row: number, totalUnsetOptions: number): IUnsetCells {
 		let cells: ICell[] = [];
 		let set = false;
-		// debugger
 		while (!set && row >= 0) {
 			while (!set && column >= 0) {
 				cells = this.subGrids[row][column].unsetCells(totalUnsetOptions);
@@ -427,7 +426,7 @@ export class Grid implements IGrid {
 			}
 		}
 
-		return cells;
+		return { column, row, cells };
 	}
 
 	public strikeOut(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number) {

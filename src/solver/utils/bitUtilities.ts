@@ -39,7 +39,7 @@ export const onlyOption = (options: number[]): IOnlyOption => {
 
   option &= ~filled;
   return {
-    found: !!option && !(option & option - 1),                      // Single base of 2 number, but not 0
+    found: option > 0 && !(option & option - 1),                      // Single base of 2 number, but not 0
     bit: option
   }
 };

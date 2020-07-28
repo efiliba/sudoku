@@ -184,9 +184,9 @@ export class Grid implements IGrid {
 			this.totalSet++;
 			this.strikeOut(subGridColumn, subGridRow, cellColumn, cellRow, cell.options);	// Remaining option
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	public removeOption(subGridColumn: number, subGridRow: number, cellColumn: number, cellRow: number, option: number): boolean {
@@ -390,7 +390,9 @@ export class Grid implements IGrid {
 						let tryOption = options & ~(options - 1);								// lowest set bit value
 						while (tryOption && valid) {
 							this.setByOption(column, row, cellColumn, cellRow, tryOption, SetMethod.calculated);
-							this.solve({eliminateAfter: unsetOptionsDepth, maxRecursionLevel: recursionLevel - 1});
+							if (recursionLevel > 0) {
+								this.solve({eliminateAfter: unsetOptionsDepth, maxRecursionLevel: recursionLevel - 1});
+							}
 							valid = this.isValid();
 							this.load(cells);                         						// Reset
 							this.totalSet = saveTotalSet;
@@ -920,7 +922,7 @@ export class Grid implements IGrid {
 			const {found, bit} = onlyOption(matrix[row]);
 			if (found) {
 				onlyOptionFound = true;
-				let matrixColumn = containingBitIndex(matrix[row], bit);		// Column within grid where only option found                     
+				let matrixColumn = containingBitIndex(matrix[row], bit);		// Column within grid where only option found
 				this.setByOption(matrixColumn / Grid.rows >> 0, row / Grid.columns >> 0, matrixColumn % Grid.rows, row % Grid.columns, bit, SetMethod.calculated);
 			}
 		}

@@ -1,4 +1,6 @@
 use std::fmt::{self, Display};
+use std::collections::HashSet;
+
 use crate::utils::combinations::Combinations;
 use crate::utils::bit_utils::{number_of_bits_set, bitwise_or, only_option, containing_bit_index};
 use crate::cell::{cell::Cell, SetMethod};
@@ -132,7 +134,6 @@ impl Grid {
     only_option_found
   }
 
-  
   pub fn remove_option(
     &mut self,
     sub_grid_column: usize,
@@ -168,7 +169,6 @@ impl Grid {
             let option = sub_grid_options[cell_row * self.max_rows + cell_column];
             if option > 0 {
               self.set_by_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option, SetMethod::Loaded);
-              // self.load_option(sub_grid_column, sub_grid_row, cell_column, cell_row, option);
             }
           }
         }
@@ -183,29 +183,19 @@ impl Grid {
 
   fn matrix_valid(&self, matrix: Vec<Vec<&Cell>>) -> bool {
     let mut valid = true;
-    
-		let mut index = self.max_options;
-		while valid && index > 0 {
-      index -= 1;
-      valid = self.contains_each_option_once(&matrix[index]);
-    }
 
-		valid
-  }
-  
-  fn contains_each_option_once(&self, cells: &Vec<&Cell>) -> bool {
-    let mut valid = true;
-    let mut options_total = 0;
-    
     let mut index = self.max_options;
 		while valid && index > 0 {
       index -= 1;
 
-      valid = options_total & cells[index].options == 0;            // Ensure not previously added
-      options_total += cells[index].options;
+			let set_options = distinct_set_options(&matrix[index]);       // Get unique set cells
+			let unset_options = unset_options(&matrix[index]);
+
+      valid = set_options.len() + unset_options.len() == self.max_options &&  // Ensures set_options do not contain duplicates
+        (bitwise_or(&set_options) | bitwise_or(&unset_options)) == (1 << self.max_options) - 1; // total set_options | unset_options must contain all the options
     }
 
-    valid
+		valid
   }
   
   fn eliminate(&mut self) -> bool {
@@ -1010,11 +1000,8 @@ impl Grid {
       for sub_grid_column in 0..self.max_columns {
         let sub_matrix = self.sub_grids[sub_grid_row][sub_grid_column].get_available_options_matrix();
 
-        for cell_column in 0..self.max_rows {
-          for cell_row in 0..self.max_columns {
-            let matrix_column = sub_grid_column * self.max_rows + cell_column;
-            matrix[matrix_column].push(sub_matrix[cell_row][cell_column]);
-          }
+        for column in 0..self.max_columns {
+          matrix[sub_grid_row * self.max_columns + column].extend(&sub_matrix[column]);
         }
       }
     }
@@ -1090,4 +1077,25 @@ impl Grid {
 
     matrix
   }
+}
+
+fn distinct_set_options(cells: &Vec<&Cell>) -> Vec<u64> {
+  cells.iter().fold(HashSet::new(), |mut distinct_cells, cell| {
+    if cell.set_method != SetMethod::Unset {
+      distinct_cells.insert(cell.options);
+    }
+    distinct_cells
+  }).into_iter().collect()
+}
+
+fn unset_options(cells: &Vec<&Cell>) -> Vec<u64> {
+  // cells.Where(x => !x.IsSet).Select(x => x.Options)
+  let mut options = Vec::with_capacity(cells.len());
+  for index in 0..cells.len() {
+    if cells[index].set_method == SetMethod::Unset {
+      options.push(cells[index].options);
+    }
+  }
+
+  options
 }

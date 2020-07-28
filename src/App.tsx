@@ -3,7 +3,7 @@ import solver from "./solver";
 import {Grid, ModifierKeys, IGridSelection, Legend} from './components';
 import './App.scss';
 
-const columns = 2;
+const columns = 3;
 const rows = 3;
 solver.Grid.Constructor(columns, rows);
 const grid = new solver.Grid();
@@ -29,6 +29,18 @@ const hard2x3 = [
   0, 0, 1, 0, 0, 0  
 ];
 
+const hard3x3 = [
+  6, 0, 0, 0, 9, 0, 0, 0, 7,  
+  0, 4, 0, 0, 0, 7, 1, 0, 0,
+  0, 0, 2, 8, 0, 0, 0, 5, 0,
+  8, 0, 0, 0, 0, 0, 0, 9, 0,
+  0, 0, 0, 0, 7, 0, 0, 0, 0,
+  0, 3, 0, 0, 0, 0, 0, 0, 8,
+  0, 5, 0, 0, 0, 2, 3, 0, 0,
+  0, 0, 4, 5, 0, 0, 0, 2, 0,
+  9, 0, 0, 0, 3, 0, 0, 0, 4
+];
+
 const App: React.FC = () => {
   const loadWasm = async () => {
     try {
@@ -41,7 +53,7 @@ const App: React.FC = () => {
   useEffect(() => {
     loadWasm();
 
-    grid.loadPuzzle(hard2x3);
+    grid.loadPuzzle(hard3x3);
     setGridData(grid.toJson());
   }, []);
 
@@ -103,6 +115,7 @@ const App: React.FC = () => {
     const solved = grid.solve({restart: true, maxRecursionLevel: 2});
     setGridData(grid.toJson());
 
+    grid.debug();
     console.log({solved, valid: grid.isValid()});
   };
 

@@ -1,44 +1,132 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Add WebAssembly to React App (ejected create-react-app)
 
-## Available Scripts
+## NOTE: Rebuild Rust code
+```bash
+wasm-pack build
+```
+Remove and re-add wasm (updating dependency) in package.json
+```bash
+"wasm": "file:./crate/pkg",
+```
+Restart server
 
-In the project directory, you can run:
+## Create a Rust lib
+```bash
+cargo new rust-app --lib
+```
+Rename ‘rust-app’ directory to crate (could not call it crate when creating)
 
-### `npm start`
+### Add wasm-bindgen
+Cargo.toml
+```bash
+[lib]
+crate-type = ["cdylib", "rlib"]
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+[dependencies]
+wasm-bindgen = "0.2.63"
+```
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+Update dependencies:
+```bash
+cargo update
+```
 
-### `npm test`
+### Add wasm_bindgen import and #[wasm_bindgen] decorator to exported functions 
+lib.rs
+```bash
+use wasm_bindgen::prelude::*;
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#[wasm_bindgen]
+pub fn add(num1: u32, num2: u32) -> u32 {
+  num1 + num2
+}
+```
 
-### `npm run build`
+Build pkg directory (re-build when Rust code modified)
+```bash
+wasm-pack build
+```
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Update React App
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+```bash
+yarn add react-app-rewired wasm-loader -D
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+config-overrides.js
+```bash
+const path = require('path');
 
-### `npm run eject`
+module.exports = function override(config, env) {
+  const wasmExtensionRegExp = /\.wasm$/;
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+  config.resolve.extensions.push('.wasm');
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  config.module.rules.forEach(rule => {
+    (rule.oneOf || []).forEach(oneOf => {
+      if (oneOf.loader && oneOf.loader.indexOf('file-loader') >= 0) {
+        // make file-loader ignore WASM files
+        oneOf.exclude.push(wasmExtensionRegExp);
+      }
+    });
+  });
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+  // add a dedicated loader for WASM
+  config.module.rules.push({
+    test: wasmExtensionRegExp,
+    include: path.resolve(__dirname, 'src'),
+    use: [{ loader: require.resolve('wasm-loader'), options: {} }]
+  });
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+  return config;
+};
+```
 
-## Learn More
+package.json
+```bash
+"scripts": {
+  "start": "react-app-rewired start",
+  "build": "react-app-rewired build",
+  "test": "react-app-rewired test"
+}
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+dependencies: {
+  …
+  “wasm2: "file:./rust-app/pkg”
+}
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Manualy add wasm-loader
+package.json
+```bash
+    "moduleFileExtensions": [
+      …
+      "wasm"
+    ],
+```
+
+webpack.config.js
+```bash
+module: {
+      …
+      rules: [
+        …
+        {
+          test: /\.wasm$/,
+          include: path.resolve(__dirname, 'src'),
+          use: [{ loader: require.resolve('wasm-loader'), options: {} }]
+        }
+      ]
+```
+
+### Call the WASM function from React
+```bash
+const loadWasm = async () => {
+  try {
+    const wasm = await import('wasm’);
+    console.log(wasm.add(2, 3));
+  } catch(err) {
+    console.error(`Unexpected error in loadWasm. [Message: ${err.message}]`);
+  }
+};
+```
